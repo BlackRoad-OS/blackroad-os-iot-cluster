@@ -35,7 +35,9 @@
 #define OCTAVIA_SERVICE_2_PORT 8000  // ✅ HTTP service
 #define OCTAVIA_SERVICE_3_PORT 8080  // ✅ HTTP service (404s)
 #define OCTAVIA_SERVICE_4_PORT 8081  // ✅ HTTP service
+#define OCTAVIA_API_PORT 8000        // Primary API port (vLLM/HTTP service)
 #define ARIA_SERVICE_PORT 5000       // ✅ API/HTTP service
+#define LUCIDIA_API_PORT 3000        // Default port for Lucidia (currently offline)
 #define IPHONE_API_PORT 8080
 
 // ═══════════════════════════════════════════════════════════

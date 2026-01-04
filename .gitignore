@@ -1,1 +1,16 @@
 .pio
+
+# API Keys & Secrets - NEVER COMMIT
+src/secrets.h
+
+# Build artifacts
+*.bin
+*.elf
+*.map
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log

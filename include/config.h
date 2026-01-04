@@ -5,7 +5,7 @@
 #define CONFIG_H
 
 // WiFi Settings
-#define WIFI_SSID "asfghjkl"
+#define WIFI_SSID "asdfghjkl"
 #define WIFI_PASSWORD "Smushymush421!"
 
 // Device Name
