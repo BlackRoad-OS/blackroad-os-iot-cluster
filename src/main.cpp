@@ -7,42 +7,27 @@
 #include <FS.h>
 // #include <ESPAsyncWebServer.h>  // Commented out - Emergency Pager doesn't need AI API server
 #include "config.h"
-#include "BlackRoadFont.h"  // BlackRoad Mono - Custom monospaced font system
-// #include "api_config.h"     // Real production API endpoints
-// #include "api_functions.h"  // API health checks
-// #include "filesystem.h"     // SPIFFS file system
-// #include "claude_code.h"    // Claude Code integration
 
-// BlackRoad OS Fortune 500 Infrastructure - 30,000 AI Employees
-// Real SSH connections to production servers
-#define OCTAVIA_IP "192.168.4.38"
-#define SHELLFISH_IP "192.168.4.x"  // Update with real IP
-#define ALICE_IP "192.168.4.x"      // Update with real IP
-#define LUCIDIA_IP "192.168.4.99"
-#define ARIA_IP "192.168.4.x"       // Update with real IP
+// ⚡ BLACKROAD BRAND COLORS - USER PREFERRED PALETTE (RGB565 format for TFT)
+// MUST be defined BEFORE including BlackRoadUI.h and WireframeTemplates.h
+#define COLOR_BLACK         0x0000  // #000000 Pure Black
+#define COLOR_WHITE         0xFFFF  // #FFFFFF Pure White
+#define COLOR_SUNRISE       0xFCE0  // #FF9D00 Sunrise Orange
+#define COLOR_WARM          0xFB40  // #FF6B00 Warm Orange
+#define COLOR_HOT_PINK      0xF80C  // #FF0066 Hot Pink (PRIMARY!)
+#define COLOR_MAGENTA       0xF80D  // #FF006B Electric Magenta
+#define COLOR_DEEP_MAG      0xD015  // #D600AA Deep Magenta
+#define COLOR_VIVID_PUR     0x781F  // #7700FF Vivid Purple
+#define COLOR_CYBER_BLUE    0x033F  // #0066FF Cyber Blue
+#define COLOR_DARK_GRAY     0x2104  // #222222 Dark Gray
 
-TFT_eSPI tft = TFT_eSPI();
-BlackRoadFont brFont(&tft);  // BlackRoad Mono font system
-
-// ⚡ BLACKROAD OFFICIAL BRAND COLORS - 2026 SYSTEM (RGB565 format for TFT)
-#define COLOR_BLACK       0x0000  // #000000 Pure Black
-#define COLOR_WHITE       0xFFFF  // #FFFFFF Pure White
-#define COLOR_AMBER       0xFD40  // #F5A623 Amber (Brand)
-#define COLOR_ORANGE      0xFB24  // #F26522 Orange
-#define COLOR_HOT_PINK    0xF8EA  // #FF1D6C Hot Pink (PRIMARY BRAND!)
-#define COLOR_MAGENTA     0xE8E6  // #E91E63 Magenta
-#define COLOR_ELECTRIC_BLUE 0x14FF // #2979FF Electric Blue (Brand)
-#define COLOR_SKY_BLUE    0x245F  // #448AFF Sky Blue
-#define COLOR_VIOLET      0x9A74  // #9C27B0 Violet (Brand)
-#define COLOR_DEEP_PURPLE 0x5AEB  // #5E35B1 Deep Purple
-#define COLOR_DARK_GRAY   0x2104  // #222222 Dark Gray
-
-// Aliases for BlackRoad Mono font compatibility
-#define COLOR_SUNRISE      COLOR_AMBER       // #F5A623 (was #FF9D00)
-#define COLOR_CYBER_BLUE   COLOR_ELECTRIC_BLUE // #2979FF (was #0066FF)
-#define COLOR_VIVID_PUR    COLOR_VIOLET      // #9C27B0 (was #7700FF)
-#define COLOR_WARM         COLOR_ORANGE      // #F26522 (warm orange)
-#define COLOR_DEEP_MAG     COLOR_DEEP_PURPLE // #5E35B1 (deep magenta/purple)
+// Aliases for compatibility
+#define COLOR_AMBER         COLOR_SUNRISE    // Sunrise Orange
+#define COLOR_ORANGE        COLOR_WARM       // Warm Orange
+#define COLOR_ELECTRIC_BLUE COLOR_CYBER_BLUE // Cyber Blue
+#define COLOR_VIOLET        COLOR_VIVID_PUR  // Vivid Purple
+#define COLOR_DEEP_PURPLE   COLOR_DEEP_MAG   // Deep Magenta
+#define COLOR_SKY_BLUE      COLOR_CYBER_BLUE // Cyber Blue
 
 // Golden Ratio Spacing System (φ = 1.618)
 #define SPACE_XS   8   // Base
@@ -56,6 +41,28 @@ BlackRoadFont brFont(&tft);  // BlackRoad Mono font system
 #define ANIM_FAST    100
 #define ANIM_MEDIUM  200
 #define ANIM_SLOW    400
+
+// Screen dimensions (ESP32-2432S028R in portrait mode)
+#define SCREEN_WIDTH  240
+#define SCREEN_HEIGHT 320
+
+// Now include headers that depend on these constants
+#include "BlackRoadFont.h"  // BlackRoad Mono - Custom monospaced font system
+#include "BlackRoadUI.h"    // ⚡ Lightning fast UI system with animations
+#include "WireframeTemplates.h"  // 10 instant-use templates for rapid development
+
+// BlackRoad OS Fortune 500 Infrastructure - 30,000 AI Employees
+// Real SSH connections to production servers
+#define OCTAVIA_IP "192.168.4.38"
+#define SHELLFISH_IP "192.168.4.x"  // Update with real IP
+#define ALICE_IP "192.168.4.x"      // Update with real IP
+#define LUCIDIA_IP "192.168.4.99"
+#define ARIA_IP "192.168.4.x"       // Update with real IP
+
+TFT_eSPI tft = TFT_eSPI();
+BlackRoadFont brFont(&tft);        // BlackRoad Mono font system
+BlackRoadUI brUI(&tft);            // ⚡ Animation & UI system
+WireframeTemplates wf(&tft);       // 10 instant-use templates
 
 // Touch configuration for ESP32-2432S028R (XPT2046)
 #define XPT2046_IRQ 36
@@ -434,57 +441,188 @@ bool getTouchCoordinates(int &x, int &y) {
   return false;
 }
 
+// ⚡ BLACKROAD OS BOOT SCREEN - Professional Startup Animation
+void drawBootScreen() {
+  tft.fillScreen(COLOR_BLACK);
+
+  // Animated BlackRoad logo (simulated with circles and text)
+  for (int r = 60; r > 0; r -= 5) {
+    float alpha = (60.0 - r) / 60.0;
+    uint16_t color = brUI.lerpColor(COLOR_HOT_PINK, COLOR_VIVID_PUR, alpha);
+    tft.drawCircle(120, 100, r, color);
+    delay(30);
+  }
+
+  // BlackRoad text (large, centered)
+  tft.setTextColor(COLOR_WHITE);
+  tft.setTextDatum(MC_DATUM);
+
+  // Fade in effect for "BLACKROAD"
+  for (int i = 0; i < 5; i++) {
+    tft.fillCircle(120, 100, 50, COLOR_BLACK);
+    brFont.drawMonoTextCentered("BLACKROAD", 120, 95, BR_MONO_LARGE, COLOR_HOT_PINK);
+    delay(100);
+  }
+
+  // OS text
+  brFont.drawMonoTextCentered("OPERATING SYSTEM", 120, 130, BR_MONO_SMALL, COLOR_SUNRISE);
+
+  // Version with gradient
+  brFont.drawMonoTextCentered("v2.5 QUANTUM", 120, 155, BR_MONO_TINY, COLOR_CYBER_BLUE);
+
+  // Animated progress bar
+  int barX = 40;
+  int barY = 190;
+  int barW = 160;
+  int barH = 8;
+
+  tft.drawRoundRect(barX, barY, barW, barH, 4, COLOR_VIVID_PUR);
+
+  for (int progress = 0; progress <= 100; progress += 5) {
+    int fillW = (barW - 4) * progress / 100;
+
+    // Gradient fill
+    for (int x = 0; x < fillW; x++) {
+      float ratio = (float)x / fillW;
+      uint16_t color = brUI.lerpColor(COLOR_HOT_PINK, COLOR_SUNRISE, ratio);
+      tft.fillRect(barX + 2 + x, barY + 2, 1, barH - 4, color);
+    }
+
+    // Progress text
+    tft.fillRect(60, 205, 120, 20, COLOR_BLACK);
+
+    char msg[40];
+    if (progress < 30) {
+      sprintf(msg, "Initializing...");
+    } else if (progress < 60) {
+      sprintf(msg, "Loading UI...");
+    } else if (progress < 90) {
+      sprintf(msg, "Connecting WiFi...");
+    } else {
+      sprintf(msg, "Ready!");
+    }
+
+    tft.setTextColor(COLOR_WHITE);
+    tft.setTextDatum(MC_DATUM);
+    tft.drawString(msg, 120, 215, 2);
+
+    delay(40);
+  }
+
+  // System info with JetBrains Mono
+  tft.setTextDatum(TC_DATUM);
+  brFont.drawMonoTextCentered("ESP32 @ 240MHz", 120, 245, BR_MONO_TINY, COLOR_CYBER_BLUE);
+  brFont.drawMonoTextCentered("320KB RAM | 4MB Flash", 120, 260, BR_MONO_TINY, COLOR_VIVID_PUR);
+
+  // BlackRoad branding with JetBrains Mono
+  brFont.drawMonoTextCentered("BlackRoad AI Systems", 120, 280, BR_MONO_TINY, COLOR_SUNRISE);
+  brFont.drawMonoTextCentered("Quantum Edge Computing", 120, 295, BR_MONO_TINY, COLOR_DEEP_MAG);
+
+  delay(1000);
+
+  // Fade out
+  for (int brightness = 255; brightness >= 0; brightness -= 15) {
+    delay(16);
+  }
+
+  tft.fillScreen(COLOR_BLACK);
+}
+
 // Status bar - PORTRAIT MODE (240 wide)
 void drawStatusBar() {
   tft.fillRect(0, 0, 240, 20, COLOR_DARK_GRAY);
 
-  // WiFi status (left)
-  tft.setTextColor(WiFi.status() == WL_CONNECTED ? COLOR_CYBER_BLUE : COLOR_HOT_PINK);
+  // WiFi status (left) with JetBrains Mono
   tft.setTextDatum(TL_DATUM);
-  tft.drawString(WiFi.status() == WL_CONNECTED ? "WiFi" : "---", 5, 3, 2);
+  brFont.drawMonoText(WiFi.status() == WL_CONNECTED ? "WiFi" : "----", 5, 5, BR_MONO_SMALL,
+                      WiFi.status() == WL_CONNECTED ? COLOR_CYBER_BLUE : COLOR_HOT_PINK);
 
-  // Time (center)
-  tft.setTextColor(COLOR_WHITE);
-  tft.setTextDatum(TC_DATUM);
+  // Time (center) with JetBrains Mono
   unsigned long mins = (millis() / 60000) % 60;
   unsigned long hrs = (millis() / 3600000) % 24;
   char timeStr[6];
   sprintf(timeStr, "%02lu:%02lu", hrs, mins);
-  tft.drawString(timeStr, 120, 3, 2);
+  brFont.drawMonoTextCentered(timeStr, 120, 5, BR_MONO_SMALL, COLOR_WHITE);
 
-  // Battery indicator (right)
-  tft.setTextColor(COLOR_SUNRISE);
+  // Battery indicator (right) with JetBrains Mono
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("100%", 235, 3, 2);
+  brFont.drawMonoText("100%", 200, 5, BR_MONO_SMALL, COLOR_SUNRISE);
 }
 
 // Draw app icon with notification badge (CIRCULAR!)
 void drawAppIcon(App &app, bool pressed = false) {
-  uint16_t fillColor = pressed ? COLOR_WHITE : app.color;
-  uint16_t outlineColor = pressed ? app.color : COLOR_WHITE;
-
-  // Draw circular app icon (BETTER THAN iPHONE!)
   int centerX = app.x + app.size/2;
   int centerY = app.y + app.size/2;
   int radius = app.size/2;
 
-  tft.fillCircle(centerX, centerY, radius, fillColor);
-  tft.drawCircle(centerX, centerY, radius, outlineColor);
+  // Pressed state - scale down
+  if (pressed) {
+    radius = radius * 0.9;
+  }
 
+  // Drop shadow (subtle)
+  if (!pressed) {
+    tft.fillCircle(centerX + 2, centerY + 2, radius, COLOR_DARK_GRAY);
+  }
+
+  // GRADIENT BACKGROUND - 5-step radial gradient
+  uint16_t darkColor = brUI.lerpColor(app.color, COLOR_BLACK, 0.3);
+
+  for (int r = radius; r > 0; r -= radius/5) {
+    float t = (float)(radius - r) / radius;
+    uint16_t stepColor = brUI.lerpColor(app.color, darkColor, t);
+    tft.fillCircle(centerX, centerY, r, stepColor);
+  }
+
+  // Gloss/shine effect (top half lighter)
+  uint16_t shineColor = brUI.lerpColor(app.color, COLOR_WHITE, 0.4);
+  for (int y = -radius; y < 0; y += 2) {
+    int w = sqrt(radius*radius - y*y);
+    float alpha = 1.0 - (float)abs(y) / radius;
+    uint16_t lineColor = brUI.lerpColor(app.color, shineColor, alpha * 0.5);
+    tft.drawFastHLine(centerX - w, centerY + y, w * 2, lineColor);
+  }
+
+  // Outer ring (accent)
+  tft.drawCircle(centerX, centerY, radius, COLOR_WHITE);
+  tft.drawCircle(centerX, centerY, radius - 1, brUI.lerpColor(COLOR_WHITE, app.color, 0.5));
+
+  // App label with shadow
   if (strlen(app.name) > 0) {
-    tft.setTextColor(pressed ? app.color : COLOR_BLACK);
+    // Text shadow
+    tft.setTextColor(COLOR_BLACK);
     tft.setTextDatum(MC_DATUM);
+    tft.drawString(app.name, centerX + 1, centerY + 1, 2);
+
+    // Main text
+    tft.setTextColor(COLOR_WHITE);
     tft.drawString(app.name, centerX, centerY, 2);
   }
 
-  // Draw notification badge (at top-right of circle)
+  // Animated pulsing badge
   if (app.badge > 0) {
     int badgeX = centerX + radius - 8;
     int badgeY = centerY - radius + 8;
-    tft.fillCircle(badgeX, badgeY, 8, COLOR_HOT_PINK);
-    tft.setTextColor(COLOR_WHITE);
+
+    // Pulsing animation
+    unsigned long now = millis();
+    int badgeRadius = 8 + (sin((now % 1000) * 2 * PI / 1000.0) * 1);
+
+    // Badge gradient
+    tft.fillCircle(badgeX, badgeY, badgeRadius, COLOR_HOT_PINK);
+    tft.fillCircle(badgeX, badgeY, badgeRadius - 2, COLOR_MAGENTA);
+
+    // Badge border
+    tft.drawCircle(badgeX, badgeY, badgeRadius, COLOR_WHITE);
+
+    // Badge number with shadow
+    tft.setTextColor(COLOR_BLACK);
     tft.setTextDatum(MC_DATUM);
-    tft.drawString(String(app.badge), badgeX, badgeY, 1);
+    String badgeStr = app.badge > 99 ? "99+" : String(app.badge);
+    tft.drawString(badgeStr, badgeX + 1, badgeY + 1, 1);
+
+    tft.setTextColor(COLOR_WHITE);
+    tft.drawString(badgeStr, badgeX, badgeY, 1);
   }
 }
 
@@ -782,65 +920,117 @@ void drawAIInference() {
   tft.fillScreen(COLOR_BLACK);
   drawStatusBar();
 
-  // Meet Operator! - Beautiful intro screen
-  tft.setTextColor(COLOR_HOT_PINK);
-  tft.setTextDatum(MC_DATUM);
-  tft.drawString("Meet Operator!", 120, 60, 4);
-
-  // By BlackRoad OS, Inc.
-  tft.setTextColor(COLOR_CYBER_BLUE);
-  tft.drawString("by BlackRoad OS, Inc.", 120, 95, 2);
-
-  // Beautiful gradient divider
-  for(int i = 0; i < 200; i++) {
-    tft.drawFastHLine(20 + i/4, 120, 200 - i/2, COLOR_VIVID_PUR);
+  // Title with gradient background
+  tft.fillRoundRect(0, 20, 240, 35, 0, COLOR_DARK_GRAY);
+  for (int i = 0; i < 18; i++) {
+    float t = i / 18.0;
+    uint16_t c = brUI.lerpColor(COLOR_HOT_PINK, COLOR_VIVID_PUR, t);
+    tft.drawFastHLine(0, 20 + i, 240, c);
   }
 
-  // Operator info card
-  tft.fillRoundRect(15, 135, 210, 120, 8, COLOR_DARK_GRAY);
-
-  // Operator icon/logo area
-  tft.fillCircle(40, 160, 18, COLOR_VIVID_PUR);
-  tft.setTextColor(COLOR_WHITE);
   tft.setTextDatum(MC_DATUM);
-  tft.drawString("OP", 40, 160, 2);
+  brFont.drawMonoTextCentered("AI INFERENCE", 120, 26, BR_MONO_MEDIUM, COLOR_WHITE);
 
-  // Operator details
-  tft.setTextColor(COLOR_HOT_PINK);
+  // Live indicator with pulsing dot
+  static bool pulse = false;
+  pulse = !pulse;
+  tft.fillCircle(205, 29, 3, pulse ? COLOR_SUNRISE : COLOR_HOT_PINK);
+  tft.setTextColor(COLOR_SUNRISE);
+  tft.setTextSize(1);
+  tft.drawString("LIVE", 220, 27, 1);
+
+  // Model selector buttons (3x2 grid)
+  int y = 43;
+  const char* models[6] = {"Sonnet", "Haiku", "Opus", "GPT-4", "Llama", "vLLM"};
+  uint16_t colors[6] = {COLOR_VIVID_PUR, COLOR_CYBER_BLUE, COLOR_HOT_PINK,
+                        COLOR_SUNRISE, COLOR_MAGENTA, COLOR_AMBER};
+  int selectedModel = 0; // Sonnet active
+
+  for (int row = 0; row < 2; row++) {
+    for (int col = 0; col < 3; col++) {
+      int idx = row * 3 + col;
+      int x = 10 + col * 73;
+      int btnY = y + row * 28;
+
+      bool isActive = (idx == selectedModel);
+      uint16_t btnColor = isActive ? colors[idx] : COLOR_DARK_GRAY;
+      uint16_t borderColor = colors[idx];
+
+      tft.fillRoundRect(x, btnY, 70, 24, 4, btnColor);
+      tft.drawRoundRect(x, btnY, 70, 24, 4, borderColor);
+
+      tft.setTextColor(isActive ? COLOR_BLACK : COLOR_WHITE);
+      tft.setTextDatum(MC_DATUM);
+      tft.drawString(models[idx], x+35, btnY+12, 1);
+    }
+  }
+
+  // Real-time metrics dashboard
+  y = 105;
+
+  // Token usage graph (sparkline)
+  tft.fillRoundRect(10, y, 220, 45, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 45, 6, COLOR_VIVID_PUR);
+
   tft.setTextDatum(TL_DATUM);
-  tft.drawString("Operator", 65, 145, 2);
+  brFont.drawMonoText("TOKENS/SEC", 16, y+4, BR_MONO_TINY, COLOR_VIVID_PUR);
 
-  tft.setTextColor(COLOR_WHITE);
-  tft.drawString("operator@blackroad", 65, 165, 1);
-  tft.drawString("BlackRoad Operating Systems", 20, 185, 1);
+  // Simulated sparkline data (8 data points)
+  int sparkData[8] = {45, 52, 48, 65, 58, 72, 68, 75};
+  int graphX = 16, graphY = y + 18, graphW = 200, graphH = 22;
 
-  // Status indicators
-  tft.setTextColor(COLOR_CYBER_BLUE);
-  tft.drawString("Status:", 20, 205, 1);
+  for (int i = 0; i < 7; i++) {
+    int x1 = graphX + (i * graphW / 7);
+    int x2 = graphX + ((i+1) * graphW / 7);
+    int y1 = graphY + graphH - (sparkData[i] * graphH / 100);
+    int y2 = graphY + graphH - (sparkData[i+1] * graphH / 100);
+
+    float t = i / 7.0;
+    uint16_t lineColor = brUI.lerpColor(COLOR_CYBER_BLUE, COLOR_HOT_PINK, t);
+    tft.drawLine(x1, y1, x2, y2, lineColor);
+    tft.fillCircle(x2, y2, 2, lineColor);
+  }
+
+  // Current value
   tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("READY", 60, 205, 1);
+  tft.setTextDatum(TR_DATUM);
+  tft.drawString("75 tok/s", 224, y+4, 1);
 
-  tft.setTextColor(COLOR_CYBER_BLUE);
-  tft.drawString("SSH:", 120, 205, 1);
+  // Response time card
+  y += 50;
+  tft.fillRoundRect(10, y, 105, 32, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 105, 32, 6, COLOR_CYBER_BLUE);
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("LATENCY", 16, y+5, BR_MONO_TINY, COLOR_CYBER_BLUE);
   tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("octavia:22", 150, 205, 1);
+  tft.drawString("28ms", 18, y+18, 2);
 
-  // Edge Device badge
-  tft.fillRoundRect(20, 225, 90, 20, 4, COLOR_VIVID_PUR);
+  // Throughput card
+  tft.fillRoundRect(125, y, 105, 32, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(125, y, 105, 32, 6, COLOR_HOT_PINK);
+
+  brFont.drawMonoText("REQUESTS", 131, y+5, BR_MONO_TINY, COLOR_HOT_PINK);
+  tft.setTextColor(COLOR_SUNRISE);
+  tft.drawString("1.2K", 133, y+18, 2);
+
+  // Backend status
+  y += 37;
+  tft.fillRoundRect(10, y, 220, 22, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 22, 6, COLOR_SUNRISE);
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("vLLM", 16, y+6, BR_MONO_SMALL, COLOR_SUNRISE);
   tft.setTextColor(COLOR_WHITE);
-  tft.setTextDatum(MC_DATUM);
-  tft.drawString("EDGE DEVICE", 65, 233, 1);
+  tft.drawString("octavia:22", 60, y+8, 1);
+  tft.setTextColor(COLOR_CYBER_BLUE);
+  tft.drawString("192.168.4.38", 140, y+8, 1);
 
-  tft.fillRoundRect(120, 225, 85, 20, 4, COLOR_HOT_PINK);
-  tft.drawString("NODE READY", 162, 233, 1);
+  // Status indicator
+  tft.fillCircle(218, y+11, 4, COLOR_SUNRISE);
+  tft.fillCircle(218, y+11, 2, COLOR_WHITE);
 
-  // Bottom action button - Connect to Octavia
-  tft.fillRoundRect(20, 255, 200, 28, 8, COLOR_VIVID_PUR);
-  tft.setTextColor(COLOR_WHITE);
-  tft.setTextDatum(MC_DATUM);
-  tft.drawString("ssh operator@192.168.4.38", 120, 269, 1);
-
-  drawBottomNav();  // Bottom navigation bar
+  drawBottomNav();
 }
 
 void drawDecisionHub() {
@@ -913,107 +1103,103 @@ void drawSettingsScreen() {
   tft.fillScreen(COLOR_BLACK);
   drawStatusBar();
 
-  // Title
-  tft.setTextColor(COLOR_VIVID_PUR);
-  tft.setTextDatum(TC_DATUM);
-  tft.drawString("SETTINGS", 160, 27, 2);
-  tft.setTextColor(COLOR_WHITE);
-  tft.drawString("BlackRoad OS v1.9", 160, 42, 1);
+  // Title with gradient background
+  tft.fillRoundRect(0, 20, 240, 45, 0, COLOR_DARK_GRAY);
+  for (int i = 0; i < 22; i++) {
+    float t = i / 22.0;
+    uint16_t c = brUI.lerpColor(COLOR_VIVID_PUR, COLOR_DEEP_MAG, t);
+    tft.drawFastHLine(0, 20 + i, 240, c);
+  }
 
-  // System stats header
-  int y = 56;
+  tft.setTextDatum(MC_DATUM);
+  brFont.drawMonoTextCentered("SETTINGS", 120, 27, BR_MONO_MEDIUM, COLOR_WHITE);
+  tft.setTextColor(COLOR_SUNRISE);
+  tft.drawString("BlackRoad OS v1.9", 120, 50, 1);
+
+  // System metrics with gradient cards
+  int y = 72;
+
+  // CPU & Memory card
+  tft.fillRoundRect(10, y, 220, 20, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 20, 6, COLOR_VIVID_PUR);
+  tft.drawRoundRect(9, y-1, 222, 22, 6, brUI.lerpColor(COLOR_VIVID_PUR, COLOR_BLACK, 0.5));
+
   tft.setTextDatum(TL_DATUM);
-  tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("System:", 10, y, 1);
+  brFont.drawMonoText("CPU", 16, y+6, BR_MONO_SMALL, COLOR_VIVID_PUR);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("ESP32 @ 240MHz | 320KB RAM", 60, y, 1);
-
-  // Hardware metrics (compact!)
-  y += 16;
-
-  // CPU & Memory
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_VIVID_PUR); tft.setTextDatum(TL_DATUM);
-  tft.drawString("CPU", 14, y+4, 2);
-  tft.setTextColor(COLOR_WHITE);
-  tft.drawString("240MHz", 60, y+5, 1);
-  tft.drawString("RAM: 44KB/320KB", 130, y+5, 1);
+  tft.drawString("240MHz", 60, y+7, 1);
   tft.setTextColor(COLOR_SUNRISE);
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("13.6%", 306, y+5, 1);
+  tft.drawString("44KB RAM", 224, y+7, 1);
 
-  // Flash & Firmware
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_HOT_PINK); tft.setTextDatum(TL_DATUM);
-  tft.drawString("FLASH", 14, y+4, 1);
+  // Flash & Firmware card
+  y += 24;
+  tft.fillRoundRect(10, y, 220, 20, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 20, 6, COLOR_HOT_PINK);
+  tft.drawRoundRect(9, y-1, 222, 22, 6, brUI.lerpColor(COLOR_HOT_PINK, COLOR_BLACK, 0.5));
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("FLASH", 16, y+6, BR_MONO_SMALL, COLOR_HOT_PINK);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("813KB/1.2MB", 60, y+5, 1);
-  tft.drawString("v1.9 (2026-01-03)", 160, y+5, 1);
+  tft.drawString("843KB", 68, y+7, 1);
   tft.setTextColor(COLOR_SUNRISE);
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("62.1%", 306, y+5, 1);
+  tft.drawString("64.3%", 224, y+7, 1);
 
-  // Network & WiFi
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_CYBER_BLUE); tft.setTextDatum(TL_DATUM);
-  tft.drawString("WiFi", 14, y+4, 2);
-  tft.setTextColor(COLOR_WHITE);
-  tft.drawString(String(WIFI_SSID), 60, y+5, 1);
-  tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("192.168.4.XXX", 170, y+5, 1);
-  tft.fillCircle(302, y+9, 3, COLOR_CYBER_BLUE); // Connected
+  // Network & WiFi card
+  y += 24;
+  tft.fillRoundRect(10, y, 220, 20, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 20, 6, COLOR_CYBER_BLUE);
+  tft.drawRoundRect(9, y-1, 222, 22, 6, brUI.lerpColor(COLOR_CYBER_BLUE, COLOR_BLACK, 0.5));
 
-  // Device ID & MAC
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_WARM); tft.setTextDatum(TL_DATUM);
-  tft.drawString("ID", 14, y+4, 2);
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("WiFi", 16, y+6, BR_MONO_SMALL, COLOR_CYBER_BLUE);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("ceo-hub-esp32", 60, y+5, 1);
-  tft.setTextColor(COLOR_VIVID_PUR);
-  tft.drawString("20:e7:c8:ba:1b:94", 180, y+5, 1);
+  tft.drawString(String(WIFI_SSID), 60, y+7, 1);
+  tft.fillCircle(218, y+10, 4, COLOR_CYBER_BLUE); // Connected indicator
+  tft.fillCircle(218, y+10, 2, COLOR_WHITE);
 
-  // SSH Nodes
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_MAGENTA); tft.setTextDatum(TL_DATUM);
-  tft.drawString("SSH", 14, y+4, 2);
-  tft.setTextColor(COLOR_WHITE);
-  tft.drawString(String(SSH_NODE_COUNT) + " nodes", 60, y+5, 1);
-  tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("lucidia,octavia,alice...", 130, y+5, 1);
+  // Device ID & MAC card
+  y += 24;
+  tft.fillRoundRect(10, y, 220, 20, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 20, 6, COLOR_WARM);
+  tft.drawRoundRect(9, y-1, 222, 22, 6, brUI.lerpColor(COLOR_WARM, COLOR_BLACK, 0.5));
 
-  // Uptime & Power
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_SUNRISE); tft.setTextDatum(TL_DATUM);
-  tft.drawString("PWR", 14, y+4, 2);
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("ID", 16, y+6, BR_MONO_SMALL, COLOR_WARM);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("USB 5V", 60, y+5, 1);
-  tft.drawString("Uptime: 8h 24m", 130, y+5, 1);
+  tft.drawString("ceo-hub", 50, y+7, 1);
   tft.setTextColor(COLOR_VIVID_PUR);
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("500mA", 306, y+5, 1);
+  tft.drawString("20:e7:c8", 224, y+7, 1);
 
-  // Display & Touch
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_VIVID_PUR); tft.setTextDatum(TL_DATUM);
-  tft.drawString("LCD", 14, y+4, 2);
+  // SSH Nodes card
+  y += 24;
+  tft.fillRoundRect(10, y, 220, 20, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 20, 6, COLOR_MAGENTA);
+  tft.drawRoundRect(9, y-1, 222, 22, 6, brUI.lerpColor(COLOR_MAGENTA, COLOR_BLACK, 0.5));
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("SSH", 16, y+6, BR_MONO_SMALL, COLOR_MAGENTA);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("320×240 ILI9341", 60, y+5, 1);
+  tft.drawString(String(SSH_NODE_COUNT) + " nodes", 56, y+7, 1);
   tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("XPT2046 Touch", 180, y+5, 1);
+  tft.setTextDatum(TR_DATUM);
+  tft.drawString("active", 224, y+7, 1);
 
-  // Bottom stats - Sovereignty!
-  tft.setTextColor(COLOR_HOT_PINK); tft.setTextDatum(TC_DATUM);
-  tft.drawString("SOVEREIGN", 80, 220, 1);
+  // Power & Uptime card
+  y += 24;
+  tft.fillRoundRect(10, y, 220, 20, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 20, 6, COLOR_SUNRISE);
+  tft.drawRoundRect(9, y-1, 222, 22, 6, brUI.lerpColor(COLOR_SUNRISE, COLOR_BLACK, 0.5));
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("PWR", 16, y+6, BR_MONO_SMALL, COLOR_SUNRISE);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("|", 150, 220, 1);
+  tft.drawString("USB 5V", 58, y+7, 1);
   tft.setTextColor(COLOR_VIVID_PUR);
-  tft.drawString("25 REPOS FORKED", 250, 220, 1);
+  tft.setTextDatum(TR_DATUM);
+  tft.drawString("500mA", 224, y+7, 1);
 
   drawBottomNav();  // Bottom navigation bar
 }
@@ -1023,78 +1209,141 @@ void drawCRMScreen() {
   tft.fillScreen(COLOR_BLACK);
   drawStatusBar();
 
-  // Title
-  tft.setTextColor(COLOR_MAGENTA);
-  tft.setTextDatum(TC_DATUM);
-  tft.drawString("CRM", 160, 27, 2);
-  tft.setTextColor(COLOR_WHITE);
-  tft.drawString("SuiteCRM Pipeline", 160, 42, 1);
+  // Title with gradient background + sync indicator
+  tft.fillRoundRect(0, 20, 240, 38, 0, COLOR_DARK_GRAY);
+  for (int i = 0; i < 18; i++) {
+    float t = i / 18.0;
+    uint16_t c = brUI.lerpColor(COLOR_MAGENTA, COLOR_VIVID_PUR, t);
+    tft.drawFastHLine(0, 20 + i, 240, c);
+  }
 
-  // Pipeline header
-  int y = 56;
+  tft.setTextDatum(MC_DATUM);
+  brFont.drawMonoTextCentered("CRM PIPELINE", 120, 27, BR_MONO_MEDIUM, COLOR_WHITE);
+
+  // Sync status (top right)
+  static bool syncPulse = false;
+  syncPulse = !syncPulse;
+  tft.fillCircle(210, 29, 3, syncPulse ? COLOR_SUNRISE : COLOR_VIVID_PUR);
+  tft.setTextColor(COLOR_WHITE);
+  tft.setTextSize(1);
+  tft.drawString("SYNC", 225, 27, 1);
+
+  // Pipeline KPI dashboard (3 metrics)
+  int y = 46;
+
+  // Total pipeline value
+  tft.fillRoundRect(10, y, 70, 18, 8, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 70, 18, 8, COLOR_SUNRISE);
+  tft.setTextDatum(MC_DATUM);
+  brFont.drawMonoText("$626K", 45, y+5, BR_MONO_TINY, COLOR_SUNRISE);
+
+  // Win rate
+  tft.fillRoundRect(85, y, 70, 18, 8, COLOR_DARK_GRAY);
+  tft.drawRoundRect(85, y, 70, 18, 8, COLOR_HOT_PINK);
+  brFont.drawMonoText("48%", 120, y+5, BR_MONO_TINY, COLOR_HOT_PINK);
+  tft.setTextColor(COLOR_WHITE);
+  tft.drawString("win", 120, y+12, 1);
+
+  // Active deals
+  tft.fillRoundRect(160, y, 70, 18, 8, COLOR_DARK_GRAY);
+  tft.drawRoundRect(160, y, 70, 18, 8, COLOR_CYBER_BLUE);
+  brFont.drawMonoText("33", 195, y+5, BR_MONO_TINY, COLOR_CYBER_BLUE);
+  tft.setTextColor(COLOR_WHITE);
+  tft.drawString("deals", 195, y+12, 1);
+
+  // Pipeline stages with cards
+  y = 72;
+
+  // Stage 1: LEAD (15 deals, $245K) with gradient card
+  tft.fillRoundRect(10, y, 220, 22, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 22, 6, COLOR_SUNRISE);
+  tft.drawRoundRect(9, y-1, 222, 24, 6, brUI.lerpColor(COLOR_SUNRISE, COLOR_BLACK, 0.5));
+
   tft.setTextDatum(TL_DATUM);
-  tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("Pipeline:", 10, y, 1);
+  brFont.drawMonoText("LEAD", 16, y+6, BR_MONO_SMALL, COLOR_SUNRISE);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("$626K (33 deals) | 48% win", 60, y, 1);
+  tft.drawString("15", 68, y+8, 1);
+  brFont.drawMonoText("$245K", 92, y+7, BR_MONO_TINY, COLOR_WHITE);
 
-  // Pipeline stages with conversion rates (compact!)
-  y += 16;
-
-  // Stage 1: LEAD (15 deals, $245K)
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_SUNRISE); tft.setTextDatum(TL_DATUM);
-  tft.drawString("LEAD", 14, y+4, 2);
-  tft.setTextColor(COLOR_WHITE);
-  tft.drawString("15", 70, y+5, 1);
-  tft.drawString("$245K", 100, y+5, 1);
-  tft.setTextColor(COLOR_VIVID_PUR);
-  tft.drawString("53%→", 155, y+5, 1);
-  tft.fillRect(200, y+7, 45, 4, COLOR_SUNRISE); // Progress bar
+  // Mini progress bar
+  tft.fillRoundRect(160, y+8, 50, 6, 3, COLOR_BLACK);
+  int progress1 = 50 * 0.53;
+  for (int i = 0; i < progress1; i++) {
+    float t = i / 50.0;
+    uint16_t c = brUI.lerpColor(COLOR_SUNRISE, COLOR_VIVID_PUR, t);
+    tft.drawFastVLine(160 + i, y+8, 6, c);
+  }
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("53%", 306, y+5, 1);
+  tft.setTextColor(COLOR_VIVID_PUR);
+  tft.drawString("53%", 224, y+8, 1);
 
   // Stage 2: CONTACT (8 deals, $189K)
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_VIVID_PUR); tft.setTextDatum(TL_DATUM);
-  tft.drawString("CONTACT", 14, y+4, 1);
+  y += 26;
+  tft.fillRoundRect(10, y, 220, 22, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 22, 6, COLOR_VIVID_PUR);
+  tft.drawRoundRect(9, y-1, 222, 24, 6, brUI.lerpColor(COLOR_VIVID_PUR, COLOR_BLACK, 0.5));
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("CONTACT", 16, y+6, BR_MONO_TINY, COLOR_VIVID_PUR);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("8", 70, y+5, 1);
-  tft.drawString("$189K", 100, y+5, 1);
-  tft.setTextColor(COLOR_CYBER_BLUE);
-  tft.drawString("75%→", 155, y+5, 1);
-  tft.fillRect(200, y+7, 64, 4, COLOR_VIVID_PUR);
+  tft.drawString("8", 72, y+8, 1);
+  brFont.drawMonoText("$189K", 92, y+7, BR_MONO_TINY, COLOR_WHITE);
+
+  tft.fillRoundRect(160, y+8, 50, 6, 3, COLOR_BLACK);
+  int progress2 = 50 * 0.75;
+  for (int i = 0; i < progress2; i++) {
+    float t = i / 50.0;
+    uint16_t c = brUI.lerpColor(COLOR_VIVID_PUR, COLOR_CYBER_BLUE, t);
+    tft.drawFastVLine(160 + i, y+8, 6, c);
+  }
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("75%", 306, y+5, 1);
+  tft.setTextColor(COLOR_CYBER_BLUE);
+  tft.drawString("75%", 224, y+8, 1);
 
   // Stage 3: PROPOSAL (6 deals, $147K)
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_CYBER_BLUE); tft.setTextDatum(TL_DATUM);
-  tft.drawString("PROPOSAL", 14, y+4, 1);
+  y += 26;
+  tft.fillRoundRect(10, y, 220, 22, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 22, 6, COLOR_CYBER_BLUE);
+  tft.drawRoundRect(9, y-1, 222, 24, 6, brUI.lerpColor(COLOR_CYBER_BLUE, COLOR_BLACK, 0.5));
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("PROPOSAL", 16, y+6, BR_MONO_TINY, COLOR_CYBER_BLUE);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("6", 70, y+5, 1);
-  tft.drawString("$147K", 100, y+5, 1);
-  tft.setTextColor(COLOR_HOT_PINK);
-  tft.drawString("67%→", 155, y+5, 1);
-  tft.fillRect(200, y+7, 57, 4, COLOR_CYBER_BLUE);
+  tft.drawString("6", 80, y+8, 1);
+  brFont.drawMonoText("$147K", 98, y+7, BR_MONO_TINY, COLOR_WHITE);
+
+  tft.fillRoundRect(160, y+8, 50, 6, 3, COLOR_BLACK);
+  int progress3 = 50 * 0.67;
+  for (int i = 0; i < progress3; i++) {
+    float t = i / 50.0;
+    uint16_t c = brUI.lerpColor(COLOR_CYBER_BLUE, COLOR_HOT_PINK, t);
+    tft.drawFastVLine(160 + i, y+8, 6, c);
+  }
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("67%", 306, y+5, 1);
+  tft.setTextColor(COLOR_HOT_PINK);
+  tft.drawString("67%", 224, y+8, 1);
 
   // Stage 4: CLOSED-WON (4 deals, $45K)
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_HOT_PINK); tft.setTextDatum(TL_DATUM);
-  tft.drawString("WON", 14, y+4, 2);
+  y += 26;
+  tft.fillRoundRect(10, y, 220, 22, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 22, 6, COLOR_HOT_PINK);
+  tft.drawRoundRect(9, y-1, 222, 24, 6, brUI.lerpColor(COLOR_HOT_PINK, COLOR_BLACK, 0.5));
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("WON", 16, y+6, BR_MONO_SMALL, COLOR_HOT_PINK);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("4", 70, y+5, 1);
-  tft.drawString("$45K", 100, y+5, 1);
-  tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("AVG:$11K", 155, y+5, 1);
-  tft.fillRect(200, y+7, 85, 4, COLOR_HOT_PINK);
+  tft.drawString("4", 60, y+8, 1);
+  brFont.drawMonoText("$45K", 80, y+7, BR_MONO_TINY, COLOR_WHITE);
+
+  tft.fillRoundRect(160, y+8, 50, 6, 3, COLOR_BLACK);
+  for (int i = 0; i < 50; i++) {
+    float t = i / 50.0;
+    uint16_t c = brUI.lerpColor(COLOR_HOT_PINK, COLOR_SUNRISE, t);
+    tft.drawFastVLine(160 + i, y+8, 6, c);
+  }
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("100%", 306, y+5, 1);
+  tft.setTextColor(COLOR_SUNRISE);
+  tft.drawString("100%", 224, y+8, 1);
 
   // Recent activity feed (compact)
   y += 26;
@@ -1541,110 +1790,132 @@ void drawMessagesScreen() {
   tft.fillScreen(COLOR_BLACK);
   drawStatusBar();
 
-  // Title
-  tft.setTextColor(COLOR_HOT_PINK);
-  tft.setTextDatum(TC_DATUM);
-  tft.drawString("MESSAGES", 160, 27, 2);
-  tft.setTextColor(COLOR_WHITE);
-  tft.drawString("Matrix + Slack Bridge", 160, 42, 1);
+  // Title with gradient background + compose button
+  tft.fillRoundRect(0, 20, 240, 38, 0, COLOR_DARK_GRAY);
+  for (int i = 0; i < 18; i++) {
+    float t = i / 18.0;
+    uint16_t c = brUI.lerpColor(COLOR_HOT_PINK, COLOR_MAGENTA, t);
+    tft.drawFastHLine(0, 20 + i, 240, c);
+  }
 
-  // Stats header
-  int y = 56;
-  tft.setTextDatum(TL_DATUM);
+  tft.setTextDatum(MC_DATUM);
+  brFont.drawMonoTextCentered("MESSAGES", 120, 27, BR_MONO_MEDIUM, COLOR_WHITE);
+
+  // Compose button (top right)
+  tft.fillRoundRect(195, 23, 38, 22, 4, COLOR_VIVID_PUR);
+  tft.setTextColor(COLOR_WHITE);
+  tft.setTextSize(1);
+  tft.drawString("+", 214, 34, 2);
+
+  // Stats header with rounded pill background
+  int y = 48;
+  tft.fillRoundRect(10, y, 220, 16, 8, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 16, 8, COLOR_VIVID_PUR);
+
+  tft.setTextDatum(MC_DATUM);
   tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("Today:", 10, y, 1);
+  tft.drawString("24", 35, y+8, 1);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("24 msgs | 3 unread | 8 threads", 50, y, 1);
+  tft.drawString("msgs", 55, y+8, 1);
 
-  // 8 Messages with types: ALERT/UPDATE/CHAT (compact!)
-  y += 16;
-
-  // Msg 1: ALERT - UNREAD (lucidia deployment)
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.fillCircle(16, y+9, 3, COLOR_VIVID_PUR); // Unread dot
-  tft.setTextColor(COLOR_VIVID_PUR); tft.setTextDatum(TL_DATUM);
-  tft.drawString("lucidia", 24, y+4, 1);
+  tft.setTextColor(COLOR_HOT_PINK);
+  tft.drawString("3", 105, y+8, 1);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("Deploy complete! 🚀", 85, y+5, 1);
+  tft.drawString("unread", 130, y+8, 1);
+
+  tft.setTextColor(COLOR_CYBER_BLUE);
+  tft.drawString("8", 185, y+8, 1);
+  tft.setTextColor(COLOR_WHITE);
+  tft.drawString("threads", 210, y+8, 1);
+
+  // Messages list with gradient borders
+  y = 72;
+
+  // Msg 1: ALERT - UNREAD (lucidia deployment) with gradient border
+  tft.fillRoundRect(10, y, 220, 20, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 20, 6, COLOR_VIVID_PUR);
+  tft.drawRoundRect(9, y-1, 222, 22, 6, brUI.lerpColor(COLOR_VIVID_PUR, COLOR_BLACK, 0.5));
+
+  tft.fillCircle(18, y+10, 4, COLOR_VIVID_PUR); // Unread dot (larger)
+  tft.fillCircle(18, y+10, 2, COLOR_WHITE);
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("lucidia", 28, y+6, BR_MONO_TINY, COLOR_VIVID_PUR);
+  tft.setTextColor(COLOR_WHITE);
+  tft.drawString("Deploy done!", 85, y+7, 1);
   tft.setTextColor(COLOR_SUNRISE);
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("now", 306, y+5, 1);
+  tft.drawString("now", 224, y+7, 1);
 
   // Msg 2: ALERT - UNREAD (aria PR review)
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.fillCircle(16, y+9, 3, COLOR_HOT_PINK);
-  tft.setTextColor(COLOR_HOT_PINK); tft.setTextDatum(TL_DATUM);
-  tft.drawString("aria", 24, y+4, 1);
+  y += 24;
+  tft.fillRoundRect(10, y, 220, 20, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 20, 6, COLOR_HOT_PINK);
+  tft.drawRoundRect(9, y-1, 222, 22, 6, brUI.lerpColor(COLOR_HOT_PINK, COLOR_BLACK, 0.5));
+
+  tft.fillCircle(18, y+10, 4, COLOR_HOT_PINK);
+  tft.fillCircle(18, y+10, 2, COLOR_WHITE);
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("aria", 28, y+6, BR_MONO_TINY, COLOR_HOT_PINK);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("PR #847 needs review", 85, y+5, 1);
+  tft.drawString("PR #847 review", 70, y+7, 1);
   tft.setTextColor(COLOR_SUNRISE);
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("2m", 306, y+5, 1);
+  tft.drawString("2m", 224, y+7, 1);
 
   // Msg 3: ALERT - UNREAD (octavia security)
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.fillCircle(16, y+9, 3, COLOR_MAGENTA);
-  tft.setTextColor(COLOR_MAGENTA); tft.setTextDatum(TL_DATUM);
-  tft.drawString("octavia", 24, y+4, 1);
+  y += 24;
+  tft.fillRoundRect(10, y, 220, 20, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 20, 6, COLOR_MAGENTA);
+  tft.drawRoundRect(9, y-1, 222, 22, 6, brUI.lerpColor(COLOR_MAGENTA, COLOR_BLACK, 0.5));
+
+  tft.fillCircle(18, y+10, 4, COLOR_MAGENTA);
+  tft.fillCircle(18, y+10, 2, COLOR_WHITE);
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("octavia", 28, y+6, BR_MONO_TINY, COLOR_MAGENTA);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("VPN: latency spike 45ms", 85, y+5, 1);
+  tft.drawString("VPN spike 45ms", 85, y+7, 1);
   tft.setTextColor(COLOR_SUNRISE);
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("5m", 306, y+5, 1);
+  tft.drawString("5m", 224, y+7, 1);
 
   // Msg 4: UPDATE - Read (shellfish SSH)
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_CYBER_BLUE); tft.setTextDatum(TL_DATUM);
-  tft.drawString("[ssh]", 14, y+4, 1);
+  y += 24;
+  tft.fillRoundRect(10, y, 220, 18, 5, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 18, 5, COLOR_CYBER_BLUE);
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("[ssh]", 16, y+5, BR_MONO_TINY, COLOR_CYBER_BLUE);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("shellfish: stable 4 nodes", 85, y+5, 1);
+  tft.drawString("4 nodes stable", 56, y+6, 1);
   tft.setTextColor(COLOR_SUNRISE);
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("12m", 306, y+5, 1);
+  tft.drawString("12m", 224, y+6, 1);
 
   // Msg 5: UPDATE - Read (alice APIs)
   y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_WARM); tft.setTextDatum(TL_DATUM);
-  tft.drawString("[api]", 14, y+4, 1);
+  tft.fillRoundRect(10, y, 220, 18, 5, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 18, 5, COLOR_WARM);
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("[api]", 16, y+5, BR_MONO_TINY, COLOR_WARM);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("/chat: 247 req, 45ms avg", 85, y+5, 1);
+  tft.drawString("247 req, 45ms", 56, y+6, 1);
   tft.setTextColor(COLOR_SUNRISE);
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("1h", 306, y+5, 1);
+  tft.drawString("1h", 224, y+6, 1);
 
   // Msg 6: CHAT - Read (ai-bot inference)
   y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_VIVID_PUR); tft.setTextDatum(TL_DATUM);
-  tft.drawString("ai-bot", 14, y+4, 1);
+  tft.fillRoundRect(10, y, 220, 18, 5, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 18, 5, COLOR_VIVID_PUR);
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("ai-bot", 16, y+5, BR_MONO_TINY, COLOR_VIVID_PUR);
   tft.setTextColor(COLOR_WHITE);
-  tft.drawString("Model: Qwen2.5-7B done", 85, y+5, 1);
+  tft.drawString("Qwen2.5 done", 65, y+6, 1);
   tft.setTextColor(COLOR_SUNRISE);
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("2h", 306, y+5, 1);
-
-  // Msg 7: UPDATE - Read (security scan)
-  y += 22;
-  tft.fillRoundRect(10, y, 300, 18, 4, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_CYBER_BLUE); tft.setTextDatum(TL_DATUM);
-  tft.drawString("[sec]", 14, y+4, 1);
-  tft.setTextColor(COLOR_WHITE);
-  tft.drawString("Scan: no threats (234 files)", 85, y+5, 1);
-  tft.setTextColor(COLOR_SUNRISE);
-  tft.setTextDatum(TR_DATUM);
-  tft.drawString("4h", 306, y+5, 1);
-
-  // Bottom stats - Message breakdown
-  tft.setTextColor(COLOR_HOT_PINK); tft.setTextDatum(TC_DATUM);
-  tft.drawString("3 UNREAD", 70, 220, 1);
-  tft.setTextColor(COLOR_WHITE);
-  tft.drawString("|", 135, 220, 1);
-  tft.setTextColor(COLOR_VIVID_PUR);
-  tft.drawString("8 THREADS", 230, 220, 1);
+  tft.drawString("2h", 224, y+6, 1);
 
   drawBottomNav();  // Bottom navigation bar
 }
@@ -4199,6 +4470,9 @@ void setup() {
   tft.fillScreen(COLOR_BLACK);
 
   Serial.println("Display initialized");
+
+  // Show professional boot screen with animations
+  drawBootScreen();
 
   // Initialize touch SPI
   touchSPI.begin(XPT2046_CLK, XPT2046_MISO, XPT2046_MOSI, XPT2046_CS);

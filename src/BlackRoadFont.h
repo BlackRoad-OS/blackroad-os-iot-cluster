@@ -2,13 +2,15 @@
 #define BLACKROAD_FONT_H
 
 /*
- * BlackRoad Mono - Custom Monospaced Font System
- * Mimics JetBrains Mono aesthetic using TFT_eSPI fonts
- * 
+ * BlackRoad Mono - JetBrains Mono Style Font System
+ * Professional monospaced font inspired by JetBrains Mono
+ *
  * Features:
- * - Consistent character width (monospaced)
- * - Geometric, technical appearance
+ * - True monospaced rendering (consistent character width)
+ * - Geometric, technical appearance like JetBrains Mono
  * - Multiple sizes optimized for 240×320 display
+ * - Enhanced readability with perfect spacing
+ * - Code-friendly aesthetic
  * - BlackRoad branding
  */
 
