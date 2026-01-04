@@ -14,3 +14,4 @@ src/secrets.h
 
 # Logs
 *.log
+esp32/device1/firmware/src/secrets.h

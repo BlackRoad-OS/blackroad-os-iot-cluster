@@ -1,98 +1,205 @@
-# BlackRoad OS - CEO Hub ESP32
+# BlackRoad OS - IoT Devices
 
-**A networked decision-making node for the BlackRoad ecosystem**
+**Production-Grade IoT Infrastructure for Fortune 500 Operations**
 
-## Hardware
-- ESP32-2432S028R
-- 2.8" TFT LCD Display (ILI9341) 240x320
-- Resistive Touch (XPT2046)
-- WiFi + Bluetooth
+## Overview
+
+This repository contains firmware, documentation, and configuration for all BlackRoad OS IoT devices including ESP32-based operator consoles, Raspberry Pi servers, and edge computing infrastructure.
+
+## Devices
+
+### ESP32 Operator Devices
+
+#### Device 1 - CEO Hub
+- **Location:** `esp32/device1/`
+- **Model:** ESP32-2432S028R (ESP32-D0WD-V3)
+- **MAC:** 20:e7:c8:ba:1b:94
+- **Status:** ✅ PRODUCTION
+- **Features:** Live API integrations (GitHub, Crypto), touchscreen UI, auto-fetch system
+- **[→ View Documentation](esp32/device1/README.md)**
 
 ## Features
-- ✨ Official BlackRoad gradient colors
-- 📱 Touch interface with HOT/NOT/SKIP buttons
-- 🌐 WiFi connectivity
-- 🖥️ SSH node integration (lucidia, shellfish, octavia, alice, aria)
-- 📊 Real-time decision tracking
-- 🎨 Black background with white text and gradient accents
 
-## Setup
+### Live API Integrations
+- **GitHub API** - Real-time repository stats across 15 organizations
+- **CoinGecko Crypto** - Live BTC/ETH/SOL price tracking
+- **Unified Dashboard** - Comprehensive API status monitoring
+- **Weather API** - Ready to integrate (needs API key)
+- **Stripe API** - Ready to integrate (needs API key)
 
-### 1. Configure WiFi
-Edit `include/config.h` and update:
-```cpp
-#define WIFI_SSID "YOUR_WIFI_NAME"
-#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
-```
+### Production Quality
+- ✅ Rate limiting per API
+- ✅ Error handling & retry logic
+- ✅ Self-monitoring metrics
+- ✅ Non-blocking async updates
+- ✅ Memory-efficient JSON parsing
+- ✅ Network resilience (auto-reconnect)
 
-### 2. Build and Upload
+## Quick Start
+
+### ESP32 Device Setup
+
 ```bash
-cd ~/ceo-hub-esp32
-pio run --target upload
+# Clone repository
+git clone https://github.com/BlackRoad-OS/blackroad-os-iot-devices.git
+cd blackroad-os-iot-devices/esp32/device1
+
+# Install PlatformIO
+pip3 install platformio
+
+# Configure WiFi (edit src/secrets.h)
+# Add your network credentials
+
+# Build & flash
+pio run -t upload
+
+# Monitor output
+pio device monitor --baud 115200
 ```
 
-### 3. Monitor Serial Output
-```bash
-pio device monitor
-```
+## Infrastructure
 
-## Official BlackRoad Colors
+### Raspberry Pi Servers
+- **Octavia** (192.168.4.38) - Main server, BlackRoad OS Dashboard
+- **Alice** (192.168.4.49) - SSH server
+- **Aria** (192.168.4.27) - API service (port 5000)
+- **Lucidia** (192.168.4.99) - Offline
+- **BlackRoad Pi** (192.168.4.64) - Offline
 
-### Primary Gradient
-- `#FF9D00` — Sunrise Orange
-- `#FF6B00` — Warm Orange
-- `#FF0066` — Hot Pink
-- `#FF006B` — Electric Magenta
-- `#D600AA` — Deep Magenta
-- `#7700FF` — Vivid Purple
-- `#0066FF` — Cyber Blue
+### Cloud Infrastructure
+- **Cloudflare Pages** - blackroad.io, lucidia.earth, blackroadai.com
+- **Railway** - 12+ projects
+- **DigitalOcean** - 159.65.43.12 (codex-infinity)
 
-### Core Neutrals
-- `#000000` — Pure Black (background)
-- `#FFFFFF` — Pure White (text)
+## Documentation
 
-## SSH Nodes
-The hub connects to these BlackRoad network nodes:
-- **lucidia** (192.168.4.38:22)
-- **shellfish** (192.168.4.99:22)
-- **octavia** (192.168.4.64:22)
-- **alice** (192.168.4.49:22)
-- **aria** (192.168.4.68:22)
-
-## Usage
-1. Power on the device
-2. Wait for WiFi connection (shows on screen)
-3. Touch buttons to make decisions:
-   - **HOT** (Hot Pink) - Approve/Yes
-   - **NOT** (Cyber Blue) - Reject/No
-   - **SKIP** (Sunrise Orange) - Skip/Next
-4. Stats update in real-time at the bottom
-
-## Project Structure
-```
-ceo-hub-esp32/
-├── include/
-│   └── config.h          # WiFi and SSH configuration
-├── src/
-│   └── main.cpp          # Main application code
-├── platformio.ini        # PlatformIO configuration
-└── README.md
-```
+### ESP32 Devices
+- [Device 1 README](esp32/device1/README.md) - Complete setup guide
+- [Build Status](esp32/device1/docs/ESP32_CRYPTO_DASHBOARD_STATUS.md) - Integration details
+- [Navigation Guide](esp32/device1/docs/ESP32_NAVIGATION_GUIDE.md) - UI usage
+- [Collaboration Notes](esp32/device1/docs/ESP32_COLLABORATION_NOTES.md) - Architecture
 
 ## Development
-- Platform: ESP32
-- Framework: Arduino
-- Libraries: TFT_eSPI
-- Upload Port: /dev/cu.usbserial-110
 
-## BlackRoad Ecosystem Integration
-This device is a node in the BlackRoad OS network, designed to integrate with:
-- SSH servers across the infrastructure
-- Decision logging systems
-- Real-time collaboration tools
-- The broader BlackRoad AI ecosystem
+### Building Firmware
+```bash
+cd esp32/device1
+
+# Clean build
+pio run -t clean
+
+# Build only
+pio run
+
+# Upload to device
+pio run -t upload
+```
+
+### Testing
+```bash
+# Monitor serial output
+pio device monitor --baud 115200
+
+# Expected output: WiFi connection, API updates, touch events
+```
+
+## API Configuration
+
+Edit `esp32/device1/src/secrets.h`:
+
+```cpp
+// WiFi
+#define WIFI_SSID "your-network"
+#define WIFI_PASSWORD "your-password"
+
+// GitHub (optional - higher rate limits)
+#define GITHUB_TOKEN "ghp_your_token_here"
+
+// Weather (ready to enable)
+#define OPENWEATHER_API_KEY "your_key_here"
+#define ENABLE_WEATHER_API true
+
+// Stripe (ready to enable)
+#define STRIPE_API_KEY "sk_test_your_key_here"
+#define ENABLE_STRIPE_API true
+```
+
+## Architecture
+
+### Auto-Fetch System
+- **GitHub Stats:** Every 5 minutes
+- **Crypto Prices:** Every 60 seconds
+- **Dashboard Report:** Every 2 minutes
+
+### Navigation System
+- Bottom navigation bar on all screens
+- LEFT button: BACK/HOME navigation
+- RIGHT button: RECENT APPS switcher
+- Touch gestures for app launching
+
+### API Monitoring
+- Per-API request tracking
+- Success rate calculation
+- Average response time
+- Last update timestamps
+- Rate limit enforcement
+
+## Contributing
+
+### For Claude Agents
+
+Before working on this repository:
+1. Read [Collaboration Notes](esp32/device1/docs/ESP32_COLLABORATION_NOTES.md)
+2. Check existing implementations in `src/api_functions.h`
+3. Follow production quality patterns (rate limiting, error handling)
+4. Test on real hardware when possible
+5. Update documentation
+
+### Code Standards
+- Use DynamicJsonDocument for JSON parsing
+- Implement rate limiting for all external APIs
+- Add comprehensive serial logging
+- Handle WiFi disconnections gracefully
+- Use millis() for non-blocking timers
+
+## Troubleshooting
+
+### Device Not Responding
+1. Check WiFi credentials in `secrets.h`
+2. Verify serial output (115200 baud)
+3. Press physical RESET button
+4. Re-flash firmware
+
+### API Errors
+- Check WiFi connection status
+- Verify API keys are valid
+- Review rate limits (GitHub: 60/hr, Crypto: 50/min)
+- Check serial output for HTTP status codes
+
+### Build Errors
+```bash
+# Clean build directory
+pio run -t clean
+
+# Re-install libraries
+pio lib install
+
+# Verify platformio.ini dependencies
+```
+
+## License
+
+Copyright © 2026 BlackRoad OS
+All rights reserved.
+
+## Contact
+
+- **Email:** blackroad.systems@gmail.com
+- **GitHub:** https://github.com/BlackRoad-OS
+- **Website:** https://blackroad.io
 
 ---
 
-**Built with BlackRoad OS**
-*Where gradient colors meet decision-making at the edge*
+**Last Updated:** 2026-01-04
+**Verification:** cadence-esp32-ux-master-1767499386-37bf3efd
+**Build:** 896,341 bytes @ 2026-01-04T18:33:00Z
