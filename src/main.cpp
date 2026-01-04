@@ -37,6 +37,8 @@ BlackRoadFont brFont(&tft);  // BlackRoad Mono font system
 #define COLOR_SUNRISE      COLOR_AMBER       // #F5A623 (was #FF9D00)
 #define COLOR_CYBER_BLUE   COLOR_ELECTRIC_BLUE // #2979FF (was #0066FF)
 #define COLOR_VIVID_PUR    COLOR_VIOLET      // #9C27B0 (was #7700FF)
+#define COLOR_WARM         COLOR_ORANGE      // #F26522 (warm orange)
+#define COLOR_DEEP_MAG     COLOR_DEEP_PURPLE // #5E35B1 (deep magenta/purple)
 
 // Golden Ratio Spacing System (φ = 1.618)
 #define SPACE_XS   8   // Base
