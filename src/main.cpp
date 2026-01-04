@@ -515,8 +515,8 @@ void drawBootScreen() {
   brFont.drawMonoTextCentered("320KB RAM | 4MB Flash", 120, 260, BR_MONO_TINY, COLOR_VIVID_PUR);
 
   // BlackRoad branding with JetBrains Mono
-  brFont.drawMonoTextCentered("BlackRoad AI Systems", 120, 280, BR_MONO_TINY, COLOR_SUNRISE);
-  brFont.drawMonoTextCentered("Quantum Edge Computing", 120, 295, BR_MONO_TINY, COLOR_DEEP_MAG);
+  brFont.drawMonoTextCentered("Operator", 120, 275, BR_MONO_SMALL, COLOR_HOT_PINK);
+  brFont.drawMonoTextCentered("by BlackRoad OS, Inc.", 120, 295, BR_MONO_TINY, COLOR_SUNRISE);
 
   delay(1000);
 
@@ -855,38 +855,76 @@ void drawNotificationDot(int x, int y, int count) {
 void drawLockScreen() {
   tft.fillScreen(COLOR_BLACK);
 
-  // Professional time display (large, centered) - PORTRAIT 240x320
+  // Gradient background effect (subtle radial)
+  for (int y = 0; y < 320; y += 4) {
+    float dist = abs(y - 160) / 160.0;
+    uint16_t c = brUI.lerpColor(COLOR_DARK_GRAY, COLOR_BLACK, dist);
+    tft.fillRect(0, y, 240, 4, c);
+  }
+
+  // Professional time display (large, centered)
   unsigned long mins = (millis() / 60000) % 60;
   unsigned long hrs = (millis() / 3600000) % 24;
   char timeStr[10];
   sprintf(timeStr, "%02lu:%02lu", hrs, mins);
 
-  tft.setTextColor(COLOR_WHITE);
+  // Time with gradient glow effect
   tft.setTextDatum(MC_DATUM);
-  brFont.drawMonoTextCentered(timeStr, 120, 100, BR_MONO_HUGE, COLOR_WHITE);
 
-  // Date
-  tft.setTextColor(COLOR_SUNRISE);
-  brFont.drawMonoTextCentered("FRIDAY, JANUARY 3", 120, 145, BR_MONO_SMALL, COLOR_SUNRISE);
-
-  // Operator branding (beautiful, professional)
-  tft.setTextColor(COLOR_HOT_PINK);
-  brFont.drawMonoTextCentered("OPERATOR", 120, 190, BR_MONO_MEDIUM, COLOR_HOT_PINK);
-  tft.setTextColor(COLOR_CYBER_BLUE);
-  brFont.drawTechnicalLabel("by blackroad os inc", 30, 218, COLOR_CYBER_BLUE);
-
-  // Unlock button (professional, pill-shaped)
-  tft.drawRoundRect(60, 260, 120, 40, 20, COLOR_WHITE);
-  tft.setTextColor(COLOR_WHITE);
-  brFont.drawMonoTextCentered("TAP TO UNLOCK", 120, 280, BR_MONO_SMALL, COLOR_WHITE);
-
-  // Status indicators (top corners - minimalist)
-  if (WiFi.status() == WL_CONNECTED) {
-    tft.fillCircle(15, 15, 4, COLOR_CYBER_BLUE);
+  // Glow layers
+  for (int i = 3; i > 0; i--) {
+    uint16_t glowColor = brUI.lerpColor(COLOR_HOT_PINK, COLOR_BLACK, i * 0.25);
+    brFont.drawMonoTextCentered(timeStr, 120 + i, 90 + i, BR_MONO_HUGE, glowColor);
   }
-  tft.setTextColor(COLOR_SUNRISE);
+
+  // Main time
+  brFont.drawMonoTextCentered(timeStr, 120, 90, BR_MONO_HUGE, COLOR_WHITE);
+
+  // Date with beautiful styling
+  brFont.drawMonoTextCentered("Friday", 120, 140, BR_MONO_SMALL, COLOR_SUNRISE);
+  brFont.drawMonoTextCentered("January 3, 2026", 120, 160, BR_MONO_TINY, COLOR_VIVID_PUR);
+
+  // Elegant divider line with gradient
+  for (int x = 0; x < 160; x++) {
+    float t = x / 160.0;
+    uint16_t c = brUI.lerpColor(COLOR_BLACK, COLOR_HOT_PINK, sin(t * 3.14) * 0.8);
+    tft.drawFastVLine(40 + x, 178, 2, c);
+  }
+
+  // Operator branding card with gradient border
+  int cardY = 195;
+  tft.fillRoundRect(30, cardY, 180, 55, 12, COLOR_DARK_GRAY);
+
+  // Gradient border
+  for (int i = 0; i < 3; i++) {
+    float t = i / 3.0;
+    uint16_t c = brUI.lerpColor(COLOR_HOT_PINK, COLOR_VIVID_PUR, t);
+    tft.drawRoundRect(30 - i, cardY - i, 180 + i*2, 55 + i*2, 12, c);
+  }
+
+  brFont.drawMonoTextCentered("OPERATOR", 120, cardY + 15, BR_MONO_MEDIUM, COLOR_HOT_PINK);
+  brFont.drawMonoTextCentered("by BlackRoad OS, Inc.", 120, cardY + 35, BR_MONO_TINY, COLOR_CYBER_BLUE);
+
+  // Unlock button with gradient
+  int btnY = 270;
+  tft.fillRoundRect(50, btnY, 140, 38, 19, COLOR_DARK_GRAY);
+
+  // Gradient fill for button
+  for (int y = 0; y < 38; y++) {
+    float t = y / 38.0;
+    uint16_t c = brUI.lerpColor(COLOR_VIVID_PUR, COLOR_HOT_PINK, t);
+    tft.drawFastHLine(51, btnY + y, 138, c);
+  }
+
+  brFont.drawMonoTextCentered("TAP TO UNLOCK", 120, btnY + 19, BR_MONO_SMALL, COLOR_WHITE);
+
+  // Status indicators (top corners - elegant)
+  if (WiFi.status() == WL_CONNECTED) {
+    tft.fillCircle(15, 15, 5, COLOR_CYBER_BLUE);
+    tft.fillCircle(15, 15, 3, COLOR_WHITE);
+  }
   tft.setTextDatum(TR_DATUM);
-  brFont.drawMonoText("100%", 200, 10, BR_MONO_TINY, COLOR_SUNRISE);
+  brFont.drawMonoText("100%", 220, 10, BR_MONO_TINY, COLOR_SUNRISE);
 }
 
 void drawHomeScreen() {
@@ -939,12 +977,12 @@ void drawAIInference() {
   tft.setTextSize(1);
   tft.drawString("LIVE", 220, 27, 1);
 
-  // Model selector buttons (3x2 grid)
+  // Model selector buttons (3x2 grid) - SOVEREIGN STACK
   int y = 43;
-  const char* models[6] = {"Sonnet", "Haiku", "Opus", "GPT-4", "Llama", "vLLM"};
+  const char* models[6] = {"Qwen7B", "Phi-2", "Mistral", "Llama3", "DeepSeek", "Gemma"};
   uint16_t colors[6] = {COLOR_VIVID_PUR, COLOR_CYBER_BLUE, COLOR_HOT_PINK,
                         COLOR_SUNRISE, COLOR_MAGENTA, COLOR_AMBER};
-  int selectedModel = 0; // Sonnet active
+  int selectedModel = 0; // Qwen7B active (vLLM on octavia)
 
   for (int row = 0; row < 2; row++) {
     for (int col = 0; col < 3; col++) {
@@ -1037,32 +1075,48 @@ void drawDecisionHub() {
   tft.fillScreen(COLOR_BLACK);
   drawStatusBar();
 
-  // Title
-  tft.setTextColor(COLOR_HOT_PINK);
-  tft.setTextDatum(TC_DATUM);
-  tft.drawString("DECISION HUB", 160, 30, 4);
+  // Title with gradient header
+  tft.fillRoundRect(0, 20, 240, 35, 0, COLOR_DARK_GRAY);
+  for (int i = 0; i < 18; i++) {
+    float t = i / 18.0;
+    uint16_t c = brUI.lerpColor(COLOR_HOT_PINK, COLOR_SUNRISE, t);
+    tft.drawFastHLine(0, 20 + i, 240, c);
+  }
 
-  // Buttons
-  tft.fillRoundRect(20, 70, 80, 60, 10, COLOR_HOT_PINK);
-  tft.fillRoundRect(120, 70, 80, 60, 10, COLOR_CYBER_BLUE);
-  tft.fillRoundRect(220, 70, 80, 60, 10, COLOR_SUNRISE);
-
-  tft.setTextColor(COLOR_BLACK);
   tft.setTextDatum(MC_DATUM);
-  tft.drawString("HOT", 60, 100, 4);
-  tft.drawString("NOT", 160, 100, 4);
-  tft.drawString("SKIP", 260, 100, 4);
+  brFont.drawMonoTextCentered("DECISION HUB", 120, 25, BR_MONO_MEDIUM, COLOR_WHITE);
 
-  // Stats
-  tft.setTextColor(COLOR_WHITE);
+  // Buttons with JetBrains Mono
+  tft.fillRoundRect(20, 70, 65, 60, 10, COLOR_HOT_PINK);
+  tft.fillRoundRect(90, 70, 65, 60, 10, COLOR_CYBER_BLUE);
+  tft.fillRoundRect(160, 70, 65, 60, 10, COLOR_SUNRISE);
+
+  tft.setTextDatum(MC_DATUM);
+  brFont.drawMonoTextCentered("HOT", 52, 95, BR_MONO_MEDIUM, COLOR_WHITE);
+  brFont.drawMonoTextCentered("NOT", 122, 95, BR_MONO_MEDIUM, COLOR_WHITE);
+  brFont.drawMonoTextCentered("SKIP", 192, 95, BR_MONO_MEDIUM, COLOR_WHITE);
+
+  // Stats with JetBrains Mono
+  int y = 150;
   tft.setTextDatum(TL_DATUM);
-  tft.drawString("Total: " + String(decisionCount), 20, 150, 2);
-  tft.setTextColor(COLOR_HOT_PINK);
-  tft.drawString("Hot: " + String(hotCount), 20, 170, 2);
-  tft.setTextColor(COLOR_CYBER_BLUE);
-  tft.drawString("Not: " + String(notCount), 20, 190, 2);
+  brFont.drawMonoText("Total:", 20, y, BR_MONO_SMALL, COLOR_WHITE);
   tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("Skip: " + String(skipCount), 20, 210, 2);
+  tft.drawString(String(decisionCount), 90, y+2, 2);
+
+  y += 20;
+  brFont.drawMonoText("Hot:", 20, y, BR_MONO_SMALL, COLOR_HOT_PINK);
+  tft.setTextColor(COLOR_HOT_PINK);
+  tft.drawString(String(hotCount), 90, y+2, 2);
+
+  y += 20;
+  brFont.drawMonoText("Not:", 20, y, BR_MONO_SMALL, COLOR_CYBER_BLUE);
+  tft.setTextColor(COLOR_CYBER_BLUE);
+  tft.drawString(String(notCount), 90, y+2, 2);
+
+  y += 20;
+  brFont.drawMonoText("Skip:", 20, y, BR_MONO_SMALL, COLOR_SUNRISE);
+  tft.setTextColor(COLOR_SUNRISE);
+  tft.drawString(String(skipCount), 90, y+2, 2);
 
   drawBottomNav();  // Bottom navigation bar
 }
@@ -1071,31 +1125,97 @@ void drawNetworkScreen() {
   tft.fillScreen(COLOR_BLACK);
   drawStatusBar();
 
-  // Title
-  tft.setTextColor(COLOR_CYBER_BLUE);
-  tft.setTextDatum(TC_DATUM);
-  tft.drawString("NETWORK", 160, 30, 4);
-
-  // WiFi info
-  tft.setTextColor(COLOR_WHITE);
-  tft.setTextDatum(TL_DATUM);
-  if (WiFi.status() == WL_CONNECTED) {
-    tft.drawString("IP: " + WiFi.localIP().toString(), 10, 60, 2);
-    tft.drawString("Network: " + String(WIFI_SSID), 10, 80, 2);
-  } else {
-    tft.drawString("WiFi: Disconnected", 10, 60, 2);
+  // Title with gradient + mesh indicator
+  tft.fillRoundRect(0, 20, 240, 35, 0, COLOR_DARK_GRAY);
+  for (int i = 0; i < 18; i++) {
+    float t = i / 18.0;
+    uint16_t c = brUI.lerpColor(COLOR_CYBER_BLUE, COLOR_VIVID_PUR, t);
+    tft.drawFastHLine(0, 20 + i, 240, c);
   }
 
-  // SSH Nodes
+  tft.setTextDatum(MC_DATUM);
+  brFont.drawMonoTextCentered("MESH NETWORK", 120, 27, BR_MONO_MEDIUM, COLOR_WHITE);
+
+  // Sovereign stack indicator (top right)
+  tft.fillCircle(210, 29, 3, COLOR_SUNRISE);
   tft.setTextColor(COLOR_SUNRISE);
-  tft.drawString("SSH NODES:", 10, 110, 2);
+  tft.setTextSize(1);
+  tft.drawString("SOV", 225, 27, 1);
 
-  tft.setTextColor(COLOR_WHITE);
-  for (int i = 0; i < SSH_NODE_COUNT && i < 5; i++) {
-    tft.drawString("• " + String(sshNodes[i].name), 10, 130 + (i * 15), 1);
+  int y = 45;
+
+  // WiFi card
+  tft.fillRoundRect(10, y, 220, 28, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 28, 6, COLOR_CYBER_BLUE);
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("WiFi", 16, y+5, BR_MONO_TINY, COLOR_CYBER_BLUE);
+
+  if (WiFi.status() == WL_CONNECTED) {
+    tft.setTextColor(COLOR_WHITE);
+    tft.drawString(WiFi.localIP().toString(), 16, y+16, 1);
+    tft.setTextColor(COLOR_SUNRISE);
+    tft.setTextDatum(TR_DATUM);
+    tft.drawString("CONN", 224, y+16, 1);
+    tft.fillCircle(218, y+19, 3, COLOR_SUNRISE);
+  } else {
+    tft.setTextColor(COLOR_HOT_PINK);
+    tft.drawString("Disconnected", 16, y+16, 1);
   }
 
-  drawBottomNav();  // Bottom navigation bar
+  // Headscale mesh card
+  y += 33;
+  tft.fillRoundRect(10, y, 220, 28, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 28, 6, COLOR_VIVID_PUR);
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("Headscale", 16, y+5, BR_MONO_TINY, COLOR_VIVID_PUR);
+  tft.setTextColor(COLOR_WHITE);
+  tft.drawString("mesh.blackroad.io", 16, y+16, 1);
+  tft.setTextColor(COLOR_SUNRISE);
+  tft.setTextDatum(TR_DATUM);
+  tft.drawString("8", 224, y+16, 1);
+  tft.setTextColor(COLOR_WHITE);
+  tft.drawString("nodes", 212, y+16, 1);
+
+  // Keycloak identity card
+  y += 33;
+  tft.fillRoundRect(10, y, 220, 28, 6, COLOR_DARK_GRAY);
+  tft.drawRoundRect(10, y, 220, 28, 6, COLOR_HOT_PINK);
+
+  tft.setTextDatum(TL_DATUM);
+  brFont.drawMonoText("Keycloak", 16, y+5, BR_MONO_TINY, COLOR_HOT_PINK);
+  tft.setTextColor(COLOR_WHITE);
+  tft.drawString("identity.blackroad.io", 16, y+16, 1);
+  tft.setTextColor(COLOR_SUNRISE);
+  tft.setTextDatum(TR_DATUM);
+  tft.drawString("AUTH", 224, y+16, 1);
+
+  // Connected nodes section
+  y += 33;
+  tft.setTextDatum(TL_DATUM);
+  tft.setTextColor(COLOR_AMBER);
+  tft.drawString("MESH NODES:", 10, y, 1);
+
+  y += 14;
+  const char* meshNodes[4] = {"lucidia", "octavia", "aria", "alice"};
+  const char* nodeIPs[4] = {".38", ".22", ".45", ".49"};
+
+  for (int i = 0; i < 4; i++) {
+    tft.fillRoundRect(10 + (i%2)*110, y + (i/2)*20, 105, 16, 4, COLOR_DARK_GRAY);
+    tft.drawRoundRect(10 + (i%2)*110, y + (i/2)*20, 105, 16, 4, COLOR_CYBER_BLUE);
+
+    tft.setTextDatum(TL_DATUM);
+    brFont.drawMonoText(meshNodes[i], 16 + (i%2)*110, y+4 + (i/2)*20, BR_MONO_TINY, COLOR_CYBER_BLUE);
+    tft.setTextColor(COLOR_WHITE);
+    tft.setTextDatum(TR_DATUM);
+    tft.drawString(nodeIPs[i], 110 + (i%2)*110, y+5 + (i/2)*20, 1);
+
+    // Status dot
+    tft.fillCircle(107 + (i%2)*110, y+8 + (i/2)*20, 2, COLOR_SUNRISE);
+  }
+
+  drawBottomNav();
 }
 
 // SETTINGS - MASSIVELY EXTENDED! System metrics, hardware info, network stats! (BETTER THAN iPHONE!)
