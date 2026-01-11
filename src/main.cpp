@@ -545,18 +545,56 @@ void drawBackButton(bool pressed = false) {
   tft.drawString("< Back", x + w/2, y + h/2, 2);
 }
 
-// Bottom Navigation Bar - Always visible, easy to tap!
-void drawBottomNav() {
-  // Navigation bar background (full width at bottom) - BIGGER!
-  tft.fillRect(0, 270, 240, 50, COLOR_DARK_GRAY);
+// Persistent Bottom Navigation Bar - LANDSCAPE (320x240)
+// Always visible on all screens except lock
+void drawNavBar() {
+  int barY = 210;  // Bottom 30px of screen
+  int barH = 30;
+  int btnW = 70;
+  int btnH = 26;
+  int btnY = barY + 2;
 
-  // Left arrow - BACK (always goes home) - BIGGER BUTTONS!
-  tft.fillRoundRect(10, 278, 80, 35, 6, COLOR_VIVID_PUR);
-  tft.setTextColor(COLOR_WHITE);
+  // Background
+  tft.fillRect(0, barY, 320, barH, 0x0841);
+  tft.drawFastHLine(0, barY, 320, COLOR_DARK_GRAY);
+
+  // ◀ Left arrow (x=10)
+  tft.fillRoundRect(10, btnY, btnW, btnH, 4, COLOR_DARK_GRAY);
+  tft.setTextColor(COLOR_CYBER_BLUE);
   tft.setTextDatum(MC_DATUM);
-  brFont.drawMonoTextCentered("HOME", 50, 295, BR_MONO_SMALL, COLOR_WHITE);
+  tft.drawString("<", 45, btnY + btnH/2, 4);
 
-  // Right arrow - ACTION (context-specific) - BIGGER BUTTONS!
+  // Home button (x=90)
+  tft.fillRoundRect(90, btnY, btnW, btnH, 4, COLOR_VIVID_PUR);
+  tft.setTextColor(COLOR_WHITE);
+  tft.drawString("HOME", 125, btnY + btnH/2, 2);
+
+  // ▶ Right arrow (x=170)
+  tft.fillRoundRect(170, btnY, btnW, btnH, 4, COLOR_DARK_GRAY);
+  tft.setTextColor(COLOR_CYBER_BLUE);
+  tft.drawString(">", 205, btnY + btnH/2, 4);
+
+  // Keyboard button (x=250)
+  tft.fillRoundRect(250, btnY, 60, btnH, 4, COLOR_HOT_PINK);
+  tft.setTextColor(COLOR_WHITE);
+  tft.drawString("KB", 280, btnY + btnH/2, 2);
+}
+
+// Check if nav bar button was pressed - returns action
+// 0=none, 1=left, 2=home, 3=right, 4=keyboard
+int checkNavBarTouch(int x, int y) {
+  if (y < 210) return 0;  // Not in nav bar area
+
+  if (x >= 10 && x <= 80) return 1;    // Left arrow
+  if (x >= 90 && x <= 160) return 2;   // Home
+  if (x >= 170 && x <= 240) return 3;  // Right arrow
+  if (x >= 250 && x <= 310) return 4;  // Keyboard
+
+  return 0;
+}
+
+// Old bottom nav for compatibility
+void drawBottomNav() {
   tft.fillRoundRect(150, 278, 80, 35, 6, COLOR_HOT_PINK);
   brFont.drawMonoTextCentered("NEXT", 190, 295, BR_MONO_SMALL, COLOR_WHITE);
 
@@ -720,7 +758,7 @@ void drawHomeScreen() {
     }
   }
 
-  // Page indicator dots at bottom center
+  // Page indicator dots above nav bar
   int dotSpacing = 15;
   int totalWidth = (TOTAL_PAGES - 1) * dotSpacing;
   int startX = 160 - totalWidth / 2;
@@ -728,11 +766,14 @@ void drawHomeScreen() {
   for (int p = 0; p < TOTAL_PAGES; p++) {
     int dotX = startX + p * dotSpacing;
     if (p == currentPage) {
-      tft.fillCircle(dotX, 225, 4, COLOR_WHITE);  // Active page
+      tft.fillCircle(dotX, 200, 4, COLOR_WHITE);  // Active page
     } else {
-      tft.fillCircle(dotX, 225, 3, COLOR_DARK_GRAY);  // Inactive
+      tft.fillCircle(dotX, 200, 3, COLOR_DARK_GRAY);  // Inactive
     }
   }
+
+  // Draw persistent nav bar
+  drawNavBar();
 }
 
 void drawAIInference() {
@@ -3768,6 +3809,11 @@ void drawCurrentScreen() {
     default:
       drawHomeScreen();
   }
+
+  // Draw nav bar on all screens except lock and home (home draws its own)
+  if (currentScreen != SCREEN_LOCK && currentScreen != SCREEN_HOME) {
+    drawNavBar();
+  }
 }
 
 // Handle touch events with swipe detection
@@ -3837,13 +3883,37 @@ void handleTouch() {
 
   Serial.printf("Touch at x:%d, y:%d on screen:%d\n", x, y, currentScreen);
 
-  // BOTTOM NAVIGATION BAR - Works on ALL screens except LOCK and HOME
-  if (currentScreen != SCREEN_LOCK && currentScreen != SCREEN_HOME) {
-    if (y >= 200) {  // Adjusted for landscape
-      Serial.printf("Bottom area touched - Going HOME!\n");
+  // PERSISTENT NAV BAR - Works on ALL screens except LOCK
+  if (currentScreen != SCREEN_LOCK) {
+    int navAction = checkNavBarTouch(x, y);
+    if (navAction > 0) {
       playBeep();
-      currentScreen = SCREEN_HOME;
-      drawCurrentScreen();
+      switch (navAction) {
+        case 1:  // Left arrow - go back/previous page
+          if (currentScreen == SCREEN_HOME && currentPage > 0) {
+            currentPage--;
+            drawHomeScreen();
+          } else if (currentScreen != SCREEN_HOME) {
+            currentScreen = SCREEN_HOME;
+            drawCurrentScreen();
+          }
+          break;
+        case 2:  // Home button
+          currentPage = 0;
+          currentScreen = SCREEN_HOME;
+          drawCurrentScreen();
+          break;
+        case 3:  // Right arrow - next page
+          if (currentScreen == SCREEN_HOME && currentPage < TOTAL_PAGES - 1) {
+            currentPage++;
+            drawHomeScreen();
+          }
+          break;
+        case 4:  // Keyboard
+          currentScreen = SCREEN_KEYBOARD;
+          drawCurrentScreen();
+          break;
+      }
       return;
     }
   }
