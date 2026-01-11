@@ -3862,26 +3862,27 @@ void handleTouch() {
       }
     }
 
-    // Lock screen - swipe up to unlock
+    // Lock screen - swipe up or tap to unlock
     if (currentScreen == SCREEN_LOCK) {
-      if (deltaY > SWIPE_THRESHOLD || touchDuration < 300) {
-        // Swipe up or quick tap unlocks
+      if (deltaY > SWIPE_THRESHOLD || touchDuration < 500) {
         Serial.println("Unlocking...");
         currentScreen = SCREEN_HOME;
         drawCurrentScreen();
         return;
       }
     }
-  }
 
-  // For non-swipe taps, use original logic
-  if (!isTouching) return;
+    // TAP DETECTION - process taps when touch ends (not swipe)
+    if (touchDuration < 500 && abs(deltaX) < SWIPE_THRESHOLD && abs(deltaY) < SWIPE_THRESHOLD) {
+      // This was a tap, not a swipe - use START position
+      x = touchStartX;
+      y = touchStartY;
 
-  // Debounce for taps - reduced for snappy response
-  if (millis() - lastTouchTime < 80) return;
-  lastTouchTime = millis();
+      // Debounce
+      if (millis() - lastTouchTime < 80) return;
+      lastTouchTime = millis();
 
-  Serial.printf("Touch at x:%d, y:%d on screen:%d\n", x, y, currentScreen);
+      Serial.printf("Tap at x:%d, y:%d on screen:%d\n", x, y, currentScreen);
 
   // PERSISTENT NAV BAR - Works on ALL screens except LOCK
   if (currentScreen != SCREEN_LOCK) {
@@ -4340,7 +4341,9 @@ void handleTouch() {
         currentScreen = SCREEN_HOME;
         drawCurrentScreen();
       }
-  }
+    }  // end switch
+   }  // end tap detection
+  }  // end touch ended
 
   // Wait for touch release (with timeout to prevent blocking)
   unsigned long releaseWait = millis();
