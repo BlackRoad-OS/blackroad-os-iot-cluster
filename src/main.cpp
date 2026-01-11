@@ -107,6 +107,17 @@ Screen currentScreen = SCREEN_LOCK;
 unsigned long lastTouchTime = 0;
 bool isLocked = false;
 
+// Swipe detection for page navigation
+int touchStartX = 0;
+int touchStartY = 0;
+int touchEndX = 0;
+int touchEndY = 0;
+bool touchActive = false;
+unsigned long touchStartTime = 0;
+int currentPage = 0;
+const int TOTAL_PAGES = 3;
+const int SWIPE_THRESHOLD = 30;  // Reduced for quicker response
+
 // App icon structure
 struct App {
   const char* name;
@@ -116,40 +127,55 @@ struct App {
   int badge;  // Notification count
 };
 
-// BlackRoad OS Professional Grid - PORTRAIT MODE (240x320)
-// 4-column grid, 50px icons, professional spacing
+// BlackRoad OS Clean Grid - LANDSCAPE MODE (320x240)
+// 4-column x 3-row grid per page, 3 pages total
+// Screen: 320w x 240h, Status bar: 24px
+// Grid positions: x = 25, 100, 175, 250 | y = 35, 100, 165
 App apps[] = {
-  // Row 1 (y=60)
-  {"CMD", COLOR_HOT_PINK, SCREEN_CEO_COMMAND, 20, 60, 45, 0},  // CEO Command Center
-  {"EXEC", COLOR_VIVID_PUR, SCREEN_EXEC_GRID, 75, 60, 45, 16},
-  {"PERF", COLOR_CYBER_BLUE, SCREEN_META, 130, 60, 45, 0},  // Performance Monitor
-  {"WORK", COLOR_CYBER_BLUE, SCREEN_WORKFLOW, 185, 60, 45, 7},
+  // ═══════════════ PAGE 1: Core Apps ═══════════════
+  {"CMD", COLOR_HOT_PINK, SCREEN_CEO_COMMAND, 25, 35, 48, 0},
+  {"AI", COLOR_VIVID_PUR, SCREEN_AI_INFERENCE, 100, 35, 48, 0},
+  {"MSG", COLOR_CYBER_BLUE, SCREEN_MESSAGES, 175, 35, 48, 3},
+  {"CRM", COLOR_HOT_PINK, SCREEN_CRM, 250, 35, 48, 12},
+  {"VPN", COLOR_CYBER_BLUE, SCREEN_MESH_VPN, 25, 100, 48, 0},
+  {"GIT", COLOR_VIVID_PUR, SCREEN_GITHUB, 100, 100, 48, 5},
+  {"TERM", COLOR_CYBER_BLUE, SCREEN_TERMINAL, 175, 100, 48, 0},
+  {"FILE", COLOR_SUNRISE, SCREEN_FILES, 250, 100, 48, 0},
+  {"API", COLOR_VIVID_PUR, SCREEN_APIS, 25, 165, 48, 0},
+  {"SET", COLOR_DARK_GRAY, SCREEN_SETTINGS, 100, 165, 48, 0},
+  {"INFRA", COLOR_SUNRISE, SCREEN_INFRASTRUCTURE, 175, 165, 48, 0},
+  {"CHAT", COLOR_HOT_PINK, SCREEN_BLACKROAD_CHAT, 250, 165, 48, 6},
 
-  // Row 2 (y=120)
-  {"AI", COLOR_VIVID_PUR, SCREEN_AI_INFERENCE, 20, 120, 45, 0},
-  {"MSG", COLOR_HOT_PINK, SCREEN_MESSAGES, 75, 120, 45, 3},
-  {"CRM", COLOR_MAGENTA, SCREEN_CRM, 130, 120, 45, 12},
-  {"VPN", COLOR_CYBER_BLUE, SCREEN_MESH_VPN, 185, 120, 45, 0},
+  // ═══════════════ PAGE 2: Productivity ═══════════════
+  {"EXEC", COLOR_VIVID_PUR, SCREEN_EXEC_GRID, 25, 35, 48, 16},
+  {"WORK", COLOR_CYBER_BLUE, SCREEN_WORKFLOW, 100, 35, 48, 7},
+  {"ID", COLOR_SUNRISE, SCREEN_IDENTITY, 175, 35, 48, 0},
+  {"LIN", COLOR_HOT_PINK, SCREEN_LINEAR, 250, 35, 48, 12},
+  {"WX", COLOR_CYBER_BLUE, SCREEN_WEATHER, 25, 100, 48, 0},
+  {"PAGER", COLOR_HOT_PINK, SCREEN_EMERGENCY_PAGER, 100, 100, 48, 0},
+  {"META", COLOR_VIVID_PUR, SCREEN_META, 175, 100, 48, 0},
+  {"STACK", COLOR_SUNRISE, SCREEN_SOVEREIGN_STACK, 250, 100, 48, 0},
+  {"LEAD", COLOR_HOT_PINK, SCREEN_HOT_LEADS, 25, 165, 48, 8},
+  {"HIST", COLOR_CYBER_BLUE, SCREEN_ALERT_HISTORY, 100, 165, 48, 0},
+  {"CEO", COLOR_VIVID_PUR, SCREEN_CEO_DASHBOARD, 175, 165, 48, 0},
+  {"CORE", COLOR_SUNRISE, SCREEN_CEO_CORE, 250, 165, 48, 0},
 
-  // Row 3 (y=180)
-  {"ID", COLOR_SUNRISE, SCREEN_IDENTITY, 20, 180, 45, 0},
-  {"FILE", COLOR_WARM, SCREEN_FILES, 75, 180, 45, 45},
-  {"API", COLOR_DEEP_MAG, SCREEN_APIS, 130, 180, 45, 4},
-  {"SET", COLOR_VIVID_PUR, SCREEN_SETTINGS, 185, 180, 45, 0},
-
-  // Row 4 (y=240)
-  {"CC", COLOR_DARK_GRAY, SCREEN_CONTROL_CENTER, 20, 215, 45, 0},
-  {"CHAT", COLOR_HOT_PINK, SCREEN_BLACKROAD_CHAT, 75, 215, 45, 6},
-  {"TERM", COLOR_CYBER_BLUE, SCREEN_TERMINAL, 130, 215, 45, 0},
-  {"PAGER", COLOR_HOT_PINK, SCREEN_EMERGENCY_PAGER, 185, 215, 45, 0},
-
-  // Row 5 (y=270) - New productivity apps
-  {"WX", COLOR_CYBER_BLUE, SCREEN_WEATHER, 20, 270, 45, 0},          // Weather
-  {"GIT", COLOR_VIVID_PUR, SCREEN_GITHUB, 75, 270, 45, 5},           // GitHub (5 PRs)
-  {"LIN", COLOR_HOT_PINK, SCREEN_LINEAR, 130, 270, 45, 12},          // Linear (12 tasks)
-  {"INFRA", COLOR_SUNRISE, SCREEN_INFRASTRUCTURE, 185, 270, 45, 0}   // Infrastructure Dashboard
+  // ═══════════════ PAGE 3: System ═══════════════
+  {"NET", COLOR_CYBER_BLUE, SCREEN_MESH_VPN, 25, 35, 48, 0},
+  {"CC", COLOR_DARK_GRAY, SCREEN_CONTROL_CENTER, 100, 35, 48, 0},
+  {"KEYS", COLOR_VIVID_PUR, SCREEN_KEYBOARD, 175, 35, 48, 0},
+  {"DEC", COLOR_HOT_PINK, SCREEN_DECISIONS, 250, 35, 48, 0},
+  {"HUB", COLOR_SUNRISE, SCREEN_DECISIONS, 25, 100, 48, 0},
+  {"MESH", COLOR_CYBER_BLUE, SCREEN_MESH_VPN, 100, 100, 48, 0},
+  {"SSO", COLOR_VIVID_PUR, SCREEN_IDENTITY, 175, 100, 48, 0},
+  {"SYNC", COLOR_HOT_PINK, SCREEN_FILES, 250, 100, 48, 0},
+  {"LOG", COLOR_DARK_GRAY, SCREEN_TERMINAL, 25, 165, 48, 0},
+  {"MON", COLOR_CYBER_BLUE, SCREEN_META, 100, 165, 48, 0},
+  {"SEC", COLOR_VIVID_PUR, SCREEN_SETTINGS, 175, 165, 48, 0},
+  {"SYS", COLOR_SUNRISE, SCREEN_INFRASTRUCTURE, 250, 165, 48, 0}
 };
-const int APP_COUNT = 21;
+const int APPS_PER_PAGE = 12;
+const int APP_COUNT = 36;
 
 // Decision Hub stats
 int decisionCount = 0;
@@ -414,10 +440,11 @@ bool getTouchCoordinates(int &x, int &y) {
   if (digitalRead(XPT2046_IRQ) == LOW) {
     uint16_t rawX = readTouchX();
     uint16_t rawY = readTouchY();
-    x = map(rawX, 200, 3700, 0, 240);  // PORTRAIT: width = 240
-    y = map(rawY, 200, 3700, 0, 320);  // PORTRAIT: height = 320
-    x = constrain(x, 0, 240);  // PORTRAIT: width = 240
-    y = constrain(y, 0, 320);  // PORTRAIT: height = 320
+    // LANDSCAPE rotation 1: swap and invert for touch alignment
+    x = map(rawY, 200, 3700, 0, 320);   // Y becomes X
+    y = map(rawX, 3700, 200, 0, 240);   // X becomes Y (inverted)
+    x = constrain(x, 0, 320);
+    y = constrain(y, 0, 240);
 
     // Filter ONLY exact (0,0) ghost touches (hardware glitch)
     if (x == 0 && y == 0) {
@@ -431,57 +458,65 @@ bool getTouchCoordinates(int &x, int &y) {
   return false;
 }
 
-// Status bar - PORTRAIT MODE (240 wide)
+// Clean minimal status bar - LANDSCAPE (320x240)
 void drawStatusBar() {
-  tft.fillRect(0, 0, 240, 20, COLOR_DARK_GRAY);
+  // Subtle dark background
+  tft.fillRect(0, 0, 320, 24, 0x0841);
 
-  // WiFi status (left)
-  tft.setTextColor(WiFi.status() == WL_CONNECTED ? COLOR_CYBER_BLUE : COLOR_HOT_PINK);
-  tft.setTextDatum(TL_DATUM);
-  tft.drawString(WiFi.status() == WL_CONNECTED ? "WiFi" : "---", 5, 3, 2);
+  // WiFi dot (left)
+  if (WiFi.status() == WL_CONNECTED) {
+    tft.fillCircle(12, 12, 4, COLOR_CYBER_BLUE);
+  } else {
+    tft.fillCircle(12, 12, 4, COLOR_HOT_PINK);
+  }
 
-  // Time (center)
+  // Time (center) - clean white
   tft.setTextColor(COLOR_WHITE);
   tft.setTextDatum(TC_DATUM);
   unsigned long mins = (millis() / 60000) % 60;
   unsigned long hrs = (millis() / 3600000) % 24;
   char timeStr[6];
   sprintf(timeStr, "%02lu:%02lu", hrs, mins);
-  tft.drawString(timeStr, 120, 3, 2);
+  tft.drawString(timeStr, 160, 5, 2);
 
-  // Battery indicator (right)
+  // Battery (right) - minimal
   tft.setTextColor(COLOR_SUNRISE);
   tft.setTextDatum(TR_DATUM);
-  tft.drawString("100%", 235, 3, 2);
+  tft.drawString("100%", 312, 5, 2);
 }
 
-// Draw app icon with notification badge (CIRCULAR!)
+// Clean app icon with subtle shadow
 void drawAppIcon(App &app, bool pressed = false) {
-  uint16_t fillColor = pressed ? COLOR_WHITE : app.color;
-  uint16_t outlineColor = pressed ? app.color : COLOR_WHITE;
+  int cx = app.x + app.size/2;
+  int cy = app.y + app.size/2;
+  int r = app.size/2;
 
-  // Draw circular app icon (BETTER THAN iPHONE!)
-  int centerX = app.x + app.size/2;
-  int centerY = app.y + app.size/2;
-  int radius = app.size/2;
-
-  tft.fillCircle(centerX, centerY, radius, fillColor);
-  tft.drawCircle(centerX, centerY, radius, outlineColor);
-
-  if (strlen(app.name) > 0) {
-    tft.setTextColor(pressed ? app.color : COLOR_BLACK);
-    tft.setTextDatum(MC_DATUM);
-    tft.drawString(app.name, centerX, centerY, 2);
+  // Subtle shadow
+  if (!pressed) {
+    tft.fillCircle(cx + 2, cy + 2, r, 0x0000);
   }
 
-  // Draw notification badge (at top-right of circle)
+  // Icon circle
+  uint16_t fillColor = pressed ? COLOR_WHITE : app.color;
+  tft.fillCircle(cx, cy, r, fillColor);
+
+  // Label
+  tft.setTextColor(pressed ? app.color : COLOR_WHITE);
+  tft.setTextDatum(MC_DATUM);
+  tft.drawString(app.name, cx, cy, 2);
+
+  // Clean badge (small, right edge)
   if (app.badge > 0) {
-    int badgeX = centerX + radius - 8;
-    int badgeY = centerY - radius + 8;
-    tft.fillCircle(badgeX, badgeY, 8, COLOR_HOT_PINK);
+    int bx = cx + r - 5;
+    int by = cy - r + 5;
+    tft.fillCircle(bx, by, 7, COLOR_HOT_PINK);
     tft.setTextColor(COLOR_WHITE);
     tft.setTextDatum(MC_DATUM);
-    tft.drawString(String(app.badge), badgeX, badgeY, 1);
+    if (app.badge > 9) {
+      tft.drawString("9+", bx, by, 1);
+    } else {
+      tft.drawString(String(app.badge), bx, by, 1);
+    }
   }
 }
 
@@ -637,7 +672,8 @@ void drawNotificationDot(int x, int y, int count) {
 void drawLockScreen() {
   tft.fillScreen(COLOR_BLACK);
 
-  // Professional time display (large, centered) - PORTRAIT 240x320
+  // Full landscape lock screen (320x240)
+  // Large time - centered
   unsigned long mins = (millis() / 60000) % 60;
   unsigned long hrs = (millis() / 3600000) % 24;
   char timeStr[10];
@@ -645,57 +681,58 @@ void drawLockScreen() {
 
   tft.setTextColor(COLOR_WHITE);
   tft.setTextDatum(MC_DATUM);
-  brFont.drawMonoTextCentered(timeStr, 120, 100, BR_MONO_HUGE, COLOR_WHITE);
+  tft.drawString(timeStr, 160, 70, 7);
 
   // Date
-  tft.setTextColor(COLOR_SUNRISE);
-  brFont.drawMonoTextCentered("FRIDAY, JANUARY 3", 120, 145, BR_MONO_SMALL, COLOR_SUNRISE);
+  tft.setTextColor(0x7BEF);
+  tft.drawString("Friday, January 10", 160, 115, 2);
 
-  // Operator branding (beautiful, professional)
+  // Accent line - wider for landscape
+  tft.drawFastHLine(100, 135, 120, COLOR_HOT_PINK);
+
+  // Brand
   tft.setTextColor(COLOR_HOT_PINK);
-  brFont.drawMonoTextCentered("OPERATOR", 120, 190, BR_MONO_MEDIUM, COLOR_HOT_PINK);
-  tft.setTextColor(COLOR_CYBER_BLUE);
-  brFont.drawTechnicalLabel("by blackroad os inc", 30, 218, COLOR_CYBER_BLUE);
+  tft.drawString("OPERATOR", 160, 160, 4);
 
-  // Unlock button (professional, pill-shaped)
-  tft.drawRoundRect(60, 260, 120, 40, 20, COLOR_WHITE);
-  tft.setTextColor(COLOR_WHITE);
-  brFont.drawMonoTextCentered("TAP TO UNLOCK", 120, 280, BR_MONO_SMALL, COLOR_WHITE);
+  // Swipe hint
+  tft.setTextColor(0x4208);
+  tft.drawString("swipe up to unlock", 160, 220, 2);
 
-  // Status indicators (top corners - minimalist)
+  // Status indicators - proper landscape positions
   if (WiFi.status() == WL_CONNECTED) {
-    tft.fillCircle(15, 15, 4, COLOR_CYBER_BLUE);
+    tft.fillCircle(15, 12, 4, COLOR_CYBER_BLUE);
   }
   tft.setTextColor(COLOR_SUNRISE);
   tft.setTextDatum(TR_DATUM);
-  brFont.drawMonoText("100%", 200, 10, BR_MONO_TINY, COLOR_SUNRISE);
+  tft.drawString("100%", 305, 8, 2);
 }
 
 void drawHomeScreen() {
   tft.fillScreen(COLOR_BLACK);
   drawStatusBar();
 
-  // Professional header - PORTRAIT MODE (240 wide)
-  tft.fillRect(0, 20, 240, 30, COLOR_DARK_GRAY);
-  tft.setTextColor(COLOR_HOT_PINK);
-  tft.setTextDatum(TL_DATUM);
-  brFont.drawMonoText("OPERATOR", 10, 27, BR_MONO_SMALL, COLOR_HOT_PINK);
-
-  // Version badge (small, professional)
-  tft.setTextColor(COLOR_CYBER_BLUE);
-  tft.setTextDatum(TR_DATUM);
-  brFont.drawMonoText("v2.4", 200, 32, BR_MONO_TINY, COLOR_CYBER_BLUE);
-
-  // Draw app icons in professional 4x5 grid (17 apps + space)
-  // Updated positions for portrait mode 240x320
-  for (int i = 0; i < APP_COUNT; i++) {
+  // Draw apps for current page only
+  int startIdx = currentPage * APPS_PER_PAGE;
+  int endIdx = startIdx + APPS_PER_PAGE;
+  for (int i = startIdx; i < endIdx && i < APP_COUNT; i++) {
     if (strlen(apps[i].name) > 0) {
       drawAppIcon(apps[i]);
     }
   }
 
-  // Page indicator dots (bottom, professional)
-  tft.fillCircle(120, 310, 3, COLOR_WHITE);
+  // Page indicator dots at bottom center
+  int dotSpacing = 15;
+  int totalWidth = (TOTAL_PAGES - 1) * dotSpacing;
+  int startX = 160 - totalWidth / 2;
+
+  for (int p = 0; p < TOTAL_PAGES; p++) {
+    int dotX = startX + p * dotSpacing;
+    if (p == currentPage) {
+      tft.fillCircle(dotX, 225, 4, COLOR_WHITE);  // Active page
+    } else {
+      tft.fillCircle(dotX, 225, 3, COLOR_DARK_GRAY);  // Inactive
+    }
+  }
 }
 
 void drawAIInference() {
@@ -3733,28 +3770,77 @@ void drawCurrentScreen() {
   }
 }
 
-// Handle touch events
+// Handle touch events with swipe detection
 void handleTouch() {
   int x, y;
+  bool isTouching = getTouchCoordinates(x, y);
 
-  if (!getTouchCoordinates(x, y)) {
-    return;
+  // Swipe detection state machine
+  if (isTouching && !touchActive) {
+    // Touch started
+    touchActive = true;
+    touchStartX = x;
+    touchStartY = y;
+    touchStartTime = millis();
+    return;  // Wait for release
   }
 
-  // Debounce
-  if (millis() - lastTouchTime < 200) {
-    return;
+  if (!isTouching && touchActive) {
+    // Touch ended - check for swipe
+    touchActive = false;
+    touchEndX = x;
+    touchEndY = y;
+
+    int deltaX = touchStartX - touchEndX;  // Positive = swipe left
+    int deltaY = touchStartY - touchEndY;  // Positive = swipe up
+    unsigned long touchDuration = millis() - touchStartTime;
+
+    // Swipe detection (only on home screen) - faster response
+    if (currentScreen == SCREEN_HOME && touchDuration < 800) {
+      if (abs(deltaX) > SWIPE_THRESHOLD && abs(deltaX) > abs(deltaY)) {
+        if (deltaX > 0 && currentPage < TOTAL_PAGES - 1) {
+          // Swipe left - next page
+          currentPage++;
+          playBeep();
+          drawHomeScreen();
+          Serial.printf("Swipe left - Page %d\n", currentPage + 1);
+          return;
+        } else if (deltaX < 0 && currentPage > 0) {
+          // Swipe right - previous page
+          currentPage--;
+          playBeep();
+          drawHomeScreen();
+          Serial.printf("Swipe right - Page %d\n", currentPage + 1);
+          return;
+        }
+      }
+    }
+
+    // Lock screen - swipe up to unlock
+    if (currentScreen == SCREEN_LOCK) {
+      if (deltaY > SWIPE_THRESHOLD || touchDuration < 300) {
+        // Swipe up or quick tap unlocks
+        Serial.println("Unlocking...");
+        currentScreen = SCREEN_HOME;
+        drawCurrentScreen();
+        return;
+      }
+    }
   }
+
+  // For non-swipe taps, use original logic
+  if (!isTouching) return;
+
+  // Debounce for taps - reduced for snappy response
+  if (millis() - lastTouchTime < 80) return;
   lastTouchTime = millis();
 
   Serial.printf("Touch at x:%d, y:%d on screen:%d\n", x, y, currentScreen);
 
   // BOTTOM NAVIGATION BAR - Works on ALL screens except LOCK and HOME
-  // ANY touch in the bottom area goes home! Simple and natural!
   if (currentScreen != SCREEN_LOCK && currentScreen != SCREEN_HOME) {
-    // Entire bottom area (y >= 270) - SUPER EASY TO TRIGGER!
-    if (y >= 270) {
-      Serial.printf("✓ Bottom area touched at x:%d y:%d - Going HOME!\n", x, y);
+    if (y >= 200) {  // Adjusted for landscape
+      Serial.printf("Bottom area touched - Going HOME!\n");
       playBeep();
       currentScreen = SCREEN_HOME;
       drawCurrentScreen();
@@ -3764,24 +3850,25 @@ void handleTouch() {
 
   switch (currentScreen) {
     case SCREEN_LOCK:
-      // Any touch unlocks (tap anywhere on screen)
-      Serial.println("Unlocking...");
-      currentScreen = SCREEN_HOME;
-      drawCurrentScreen();
+      // Handled by swipe detection above
       break;
 
     case SCREEN_HOME:
-      // Check app icons
-      for (int i = 0; i < APP_COUNT; i++) {
-        if (x >= apps[i].x && x <= apps[i].x + apps[i].size &&
-            y >= apps[i].y && y <= apps[i].y + apps[i].size) {
-          // Visual feedback
-          drawAppIcon(apps[i], true);
-          delay(100);
+      // Check app icons for current page only
+      {
+        int startIdx = currentPage * APPS_PER_PAGE;
+        int endIdx = startIdx + APPS_PER_PAGE;
+        for (int i = startIdx; i < endIdx && i < APP_COUNT; i++) {
+          if (x >= apps[i].x && x <= apps[i].x + apps[i].size &&
+              y >= apps[i].y && y <= apps[i].y + apps[i].size) {
+            // Quick visual feedback
+            drawAppIcon(apps[i], true);
+            delay(50);  // Faster response
 
-          currentScreen = apps[i].screen;
-          drawCurrentScreen();
-          break;
+            currentScreen = apps[i].screen;
+            drawCurrentScreen();
+            break;
+          }
         }
       }
       break;
@@ -4705,7 +4792,7 @@ void setup() {
 
   // Initialize display
   tft.init();
-  tft.setRotation(0); // Portrait mode (240x320) - PROFESSIONAL VERTICAL LAYOUT
+  tft.setRotation(1); // Landscape mode (320x240) - CLEAN HORIZONTAL LAYOUT
   tft.fillScreen(COLOR_BLACK);
 
   Serial.println("Display initialized");
